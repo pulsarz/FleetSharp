@@ -58,12 +58,26 @@ namespace FleetSharp
             return tx;
         }
 
+        //Tries to find unspent + mempool first, if not found tries spent ones.
         public async Task<NodeBox?> GetBox(string? boxId)
         {
             NodeBox? box = null;
             if (boxId == null) return null;
 
-            box = await client.GetFromJsonAsync<NodeBox>($"{this.nodeURL}/utxo/withPool/byId/{boxId}");
+            try
+            {
+                box = await client.GetFromJsonAsync<NodeBox>($"{this.nodeURL}/utxo/withPool/byId/{boxId}");
+            }
+            catch (Exception e)
+            {
+
+            }
+
+            if (box == null)
+            {
+                //Retrieve box from blockchain indexer instead
+                box = await client.GetFromJsonAsync<NodeBox>($"{this.nodeURL}/blockchain/box/byId/{boxId}");
+            }
 
             return box;
         }

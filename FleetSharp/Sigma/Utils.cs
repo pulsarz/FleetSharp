@@ -15,15 +15,28 @@ namespace FleetSharp.Sigma
         {
             return (type >= (SigmaTypeCode)0x0c && type <= (SigmaTypeCode)0x23);
         }
+        public static bool isCollType(ISigmaType data)
+        {
+            return isCollTypeCode(data.type);
+        }
 
         public static bool isEmbeddableTypeCode(SigmaTypeCode type)
         {
             return (type >= (SigmaTypeCode)0x01 && type <= (SigmaTypeCode)0x0b);
         }
+        public static bool isEmbeddableType(ISigmaType data)
+        {
+            return isEmbeddableTypeCode(data.type);
+        }
 
         public static bool isPrimitiveTypeCode(SigmaTypeCode type)
         {
             return !isConstructorTypeCode(type);
+        }
+
+        public static bool isPrimitiveType(ISigmaType data)
+        {
+            return isPrimitiveTypeCode(data.type);
         }
     }
 }

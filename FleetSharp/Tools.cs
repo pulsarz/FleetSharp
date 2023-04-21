@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Globalization;
+using System.IO;
 using System.Linq;
+using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 
 namespace FleetSharp
@@ -17,7 +19,7 @@ namespace FleetSharp
 
         public static string BytesToHex(byte[] bytes)
         {
-            return Convert.ToHexString(bytes);
+            return Convert.ToHexString(bytes).ToLowerInvariant();
         }
 
         public static string HexToUTF8String(string hex)

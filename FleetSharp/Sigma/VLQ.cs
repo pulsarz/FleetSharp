@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
 
 namespace FleetSharp.Sigma
@@ -39,6 +40,56 @@ namespace FleetSharp.Sigma
             while ((lower7bits & 0x80) != 0);
 
             return value;
+        }
+
+        public static SigmaWriter WriteVlqInt32(SigmaWriter writer, uint value)
+        {
+            if (value == 0)
+            {
+                return writer.write(0);
+            }
+            else if (value < 0)
+            {
+                throw new InvalidDataException("Variable Length Quantity not supported for negative numbers.");
+            }
+
+            do
+            {
+                var lower7bits = value & 0x7f;
+                value >>= 7;
+
+                if (value > 0) lower7bits |= 0x80;
+
+                writer.write((byte)lower7bits);
+            }
+            while (value > 0);
+
+            return writer;
+        }
+
+        public static SigmaWriter WriteVlqInt64(SigmaWriter writer, ulong value)
+        {
+            if (value == 0)
+            {
+                return writer.write(0);
+            }
+            else if (value < 0)
+            {
+                throw new InvalidDataException("Variable Length Quantity not supported for negative numbers.");
+            }
+
+            do
+            {
+                var lower7bits = value & 0x7f;
+                value >>= 7;
+
+                if (value > 0) lower7bits |= 0x80;
+
+                writer.write((byte)lower7bits);
+            }
+            while (value > 0);
+
+            return writer;
         }
     }
 }
