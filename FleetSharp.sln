@@ -1,0 +1,30 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.2.32630.192
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FleetSharp", "FleetSharp\FleetSharp.csproj", "{762D6208-05B5-4EBE-826F-70CC0DA0DF25}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{F39C0D9F-640B-4259-8DF3-CF4BC21A3DF6}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{762D6208-05B5-4EBE-826F-70CC0DA0DF25}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{762D6208-05B5-4EBE-826F-70CC0DA0DF25}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{762D6208-05B5-4EBE-826F-70CC0DA0DF25}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{762D6208-05B5-4EBE-826F-70CC0DA0DF25}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {67CAEC1F-6011-49C1-A833-7F286B0142F7}
+	EndGlobalSection
+EndGlobal
