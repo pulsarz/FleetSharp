@@ -56,6 +56,26 @@ namespace FleetSharp.Types
         public int decimals { get; set; }
     }
 
+    public class NodeBalanceToken
+    {
+        public string? tokenId { get; set; }
+        public long? amount { get; set; }
+        public int? decimals { get; set; }
+        public string? name { get; set; }
+    }
+
+    public class NodeBalanceWrapper
+    {
+        public long? nanoErgs { get; set; }
+        public List<NodeBalanceToken>? tokens { get; set; }
+    }
+
+    public class NodeBalance
+    {
+        public NodeBalanceWrapper? confirmed { get; set; }
+        public NodeBalanceWrapper? unconfirmed { get; set; }
+    }
+
     public class IsValidAddress
     {
         public string? error { get; set; }

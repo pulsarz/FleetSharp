@@ -76,14 +76,21 @@ namespace FleetSharp
 
             if (ergoTree == null) return null;
 
-
             do
             {
-                temp = await client.GetFromJsonAsync<List<NodeBox>>($"{this.nodeURL}/blockchain/box/unspent/byErgoTree/{ergoTree}?offset={boxes.Count}&limit={limit}");
-
-                if (temp != null)
+                //temp = await client.GetFromJsonAsync<List<NodeBox>>($"{this.nodeURL}/blockchain/box/unspent/byErgoTree/{ergoTree}?offset={boxes.Count}&limit={limit}");
+                temp = null;
+                //var response = await client.PostAsJsonAsync($"{this.nodeURL}/blockchain/box/unspent/byErgoTree?offset={boxes.Count}&limit={limit}", ergoTree);
+                var response = await client.PostAsync($"{this.nodeURL}/blockchain/box/unspent/byErgoTree?offset={boxes.Count}&limit={limit}", new StringContent(ergoTree, Encoding.UTF8, "application/json"));
+                var content = await response.Content.ReadAsStringAsync();
+                if (content != null && content != "")
                 {
-                    boxes.AddRange(temp);
+                    temp = JsonSerializer.Deserialize<List<NodeBox>>(content);
+
+                    if (temp != null)
+                    {
+                        boxes.AddRange(temp);
+                    }
                 }
             }
             while (temp != null && temp?.Count == limit);
@@ -99,6 +106,22 @@ namespace FleetSharp
             token = await client.GetFromJsonAsync<NodeToken>($"{this.nodeURL}/blockchain/token/byId/{tokenId}");
 
             return token;
+        }
+
+        public async Task<NodeBalance?> GetAddressBalance(string? address)
+        {
+            NodeBalance? balance = null;
+
+            if (address == null) return null;
+
+            var response = await client.PostAsync($"{this.nodeURL}/blockchain/balance", new StringContent(address, Encoding.UTF8, "application/json"));
+            var content = await response.Content.ReadAsStringAsync();
+            if (content != null && content != "")
+            {
+                balance = JsonSerializer.Deserialize<NodeBalance>(content);
+            }
+
+            return balance;
         }
 
         public async Task<string?> ErgoTreeToAddress(string? ergoTree)
