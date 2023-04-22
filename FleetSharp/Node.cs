@@ -145,6 +145,11 @@ namespace FleetSharp
             return address.address;
         }
 
+        public async Task<NodeIndexedHeight?> GetIndexedHeight()
+        {
+            return await client.GetFromJsonAsync<NodeIndexedHeight>($"{this.nodeURL}/blockchain/indexedHeight");
+        }
+
         public async Task<bool> IsValidAddress(string? address)
         {
             if (address == null) return false;
@@ -175,8 +180,7 @@ namespace FleetSharp
             {
                 if (tx.inputs[i] != null)
                 {
-                    string? address = await ErgoTreeToAddress(tx.inputs[i]?.ergoTree);
-                    if (address != null) tx.inputs[i].address = address;
+                    tx.inputs[i].address = ErgoAddress.fromErgoTree(tx.inputs[i]?.ergoTree, Network.Mainnet).encode(Network.Mainnet);
                 }
             }
 
@@ -185,8 +189,7 @@ namespace FleetSharp
             {
                 if (tx.outputs[i] != null)
                 {
-                    string? address = await ErgoTreeToAddress(tx.outputs[i]?.ergoTree);
-                    if (address != null) tx.outputs[i].address = address;
+                    tx.outputs[i].address = ErgoAddress.fromErgoTree(tx.outputs[i]?.ergoTree, Network.Mainnet).encode(Network.Mainnet);
                 }
             }
 

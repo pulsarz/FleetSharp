@@ -110,10 +110,10 @@ namespace FleetSharp.Sigma
 
                 }
             }
-            else if (Utils.isCollType(data))
+            else if (Utils.isColl(data))
             {
-                if (((ISigmaCollection)data).value.GetType() == typeof(string)) writer.writeVlq((uint)((ISigmaCollection)data).value.Length / 2);
-                else writer.writeVlq((uint)((ISigmaCollection)data).value.Length);
+                if (((ISigmaCollection)data).value.GetType() == typeof(string)) writer.writeVlq(((ISigmaCollection)data).value.Length / 2);
+                else writer.writeVlq(((ISigmaCollection)data).value.Length);
 
                 switch (((ISigmaCollection)data).elementsType)
                 {
@@ -128,9 +128,7 @@ namespace FleetSharp.Sigma
                         for (var i = 0; i < ((ISigmaCollection)data).value.Length; i++)
                         {
                             serialize(((ISigmaCollection)data).value[i], writer);
- 
                         }
-
                         break;
                 }
             }

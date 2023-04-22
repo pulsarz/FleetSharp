@@ -76,6 +76,12 @@ namespace FleetSharp.Types
         public NodeBalanceWrapper? unconfirmed { get; set; }
     }
 
+    public class NodeIndexedHeight
+    {
+        public int? indexedHeight { get; set; }
+        public int? fullHeight { get; set; }
+    }
+
     public class IsValidAddress
     {
         public string? error { get; set; }

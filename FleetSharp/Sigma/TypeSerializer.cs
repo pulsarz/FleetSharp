@@ -14,11 +14,11 @@ namespace FleetSharp.Sigma
             {
                 buffer.write((byte)((IPrimitiveSigmaType)value).type);
             }
-            else if (Utils.isCollType(value))
+            else if (Utils.isColl(value))
             {
-                if (Utils.isEmbeddableTypeCode(((ISigmaCollection)value).elementsType))
+                if (Utils.isEmbeddable(value))
                 {
-                    buffer.write((byte)((byte)((ISigmaCollection)value).type + (byte)((ISigmaCollection)value).elementsType));
+                    buffer.write((byte)((byte)value.type + (byte)value.elementsType));
                 }
             }
         }

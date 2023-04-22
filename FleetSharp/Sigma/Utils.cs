@@ -15,7 +15,7 @@ namespace FleetSharp.Sigma
         {
             return (type >= (SigmaTypeCode)0x0c && type <= (SigmaTypeCode)0x23);
         }
-        public static bool isCollType(ISigmaType data)
+        public static bool isColl(ISigmaType data)
         {
             return isCollTypeCode(data.type);
         }
@@ -24,11 +24,6 @@ namespace FleetSharp.Sigma
         {
             return (type >= (SigmaTypeCode)0x01 && type <= (SigmaTypeCode)0x0b);
         }
-        public static bool isEmbeddableType(ISigmaType data)
-        {
-            return isEmbeddableTypeCode(data.type);
-        }
-
         public static bool isPrimitiveTypeCode(SigmaTypeCode type)
         {
             return !isConstructorTypeCode(type);
@@ -37,6 +32,10 @@ namespace FleetSharp.Sigma
         public static bool isPrimitiveType(ISigmaType data)
         {
             return isPrimitiveTypeCode(data.type);
+        }
+        public static bool isEmbeddable(ISigmaCollection data)
+        {
+            return isEmbeddableTypeCode(data.elementsType);
         }
     }
 }
