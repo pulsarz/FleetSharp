@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 
 namespace FleetSharp.Sigma
@@ -91,7 +92,14 @@ namespace FleetSharp.Sigma
             return this;
         }
 
-        //ToDo: writeBigInt
+        public SigmaWriter writeBigInt(BigInteger value)
+        {
+            var bytes = Tools.BigIntegerToBytes(value);
+            writeVlq((uint)bytes.Length);
+            writeBytes(bytes);
+
+            return this;
+        }
 
         public string toHex()
         {

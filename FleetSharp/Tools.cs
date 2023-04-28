@@ -2,6 +2,7 @@
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Numerics;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 
@@ -31,6 +32,26 @@ namespace FleetSharp
         public static long HexToLong(string hex)
         {
             return long.Parse(hex, System.Globalization.NumberStyles.HexNumber);
+        }
+
+        public static BigInteger BytesToBigInteger(byte[] bytes)
+        {
+            return new BigInteger(bytes);
+        }
+
+        public static BigInteger HexToBigInteger(string hex)
+        {
+            return BytesToBigInteger(HexToBytes(hex));
+        }
+
+        public static byte[] BigIntegerToBytes(BigInteger value)
+        {
+            return value.ToByteArray();
+        }
+
+        public static string BigIntegerToHex(BigInteger value)
+        {
+            return BytesToHex(BigIntegerToBytes(value));
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Numerics;
 using System.Text;
 using System.Text.Json;
 using Microsoft.CSharp;
@@ -29,6 +30,8 @@ namespace FleetSharp.Sigma
                         return reader.readInt();
                     case SigmaTypeCode.Long:
                         return reader.readLong();
+                    case SigmaTypeCode.BigInt:
+                        return reader.readBigInt();
                     case SigmaTypeCode.GroupElement:
                         return reader.readBytes(GROUP_ELEMENT_LENGTH);
                     case SigmaTypeCode.SigmaProp:
@@ -87,6 +90,9 @@ namespace FleetSharp.Sigma
                         break;
                     case SigmaTypeCode.Long:
                         writer.writeLong((long)((IPrimitiveSigmaType)data).value);
+                        break;
+                    case SigmaTypeCode.BigInt:
+                        writer.writeBigInt((BigInteger)((IPrimitiveSigmaType)data).value);
                         break;
                     case SigmaTypeCode.GroupElement:
                         writer.writeBytes(((IPrimitiveSigmaType)data).value);

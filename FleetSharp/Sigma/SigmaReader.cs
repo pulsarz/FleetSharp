@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 
 namespace FleetSharp.Sigma
@@ -83,6 +84,12 @@ namespace FleetSharp.Sigma
         public int readInt()
         {
             return (int)readLong();
+        }
+
+        public BigInteger readBigInt()
+        {
+            var len = (int)VLQ.ReadVlqInt32(this);
+            return Tools.BytesToBigInteger(readBytes(len));
         }
     }
 }
