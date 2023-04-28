@@ -94,7 +94,8 @@ namespace FleetSharp.Sigma
 
         public SigmaWriter writeBigInt(BigInteger value)
         {
-            var bytes = Tools.BigIntegerToBytes(value);
+            //Convert LE to BE
+            var bytes = Tools.BigIntegerToBytes(value).Reverse().ToArray();
             writeVlq((uint)bytes.Length);
             writeBytes(bytes);
 

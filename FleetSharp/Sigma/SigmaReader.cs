@@ -89,7 +89,8 @@ namespace FleetSharp.Sigma
         public BigInteger readBigInt()
         {
             var len = (int)VLQ.ReadVlqInt32(this);
-            return Tools.BytesToBigInteger(readBytes(len));
+            //convert BE to LE
+            return Tools.BytesToBigInteger(readBytes(len).Reverse().ToArray());
         }
     }
 }
