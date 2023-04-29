@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Numerics;
@@ -9,6 +10,7 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 
 namespace FleetSharp
 {
@@ -85,9 +87,9 @@ namespace FleetSharp
             return box;
         }
 
-        public async Task<List<Box<long>>?> GetUnspentBoxesByErgoTree(string? ergoTree)
+        public async Task<List<Box<long>>> GetUnspentBoxesByErgoTree(string ergoTree)
         {
-            List<Box<long>>? boxes = new List<Box<long>>();
+            List<Box<long>> boxes = new List<Box<long>>();
             List<Box<long>>? temp = null;
             int limit = 1000;
 
@@ -111,6 +113,26 @@ namespace FleetSharp
                 }
             }
             while (temp != null && temp?.Count == limit);
+
+            return boxes;
+        }
+
+        //Will run all ergoTrees parallel!
+        public async Task<List<Box<long>>> GetUnspentBoxesByErgoTrees(List<string> ergoTrees)
+        {
+            List<Box<long>> boxes = new List<Box<long>>();
+            var taskList = new List<Task<List<Box<long>>>>();
+
+            foreach (var ergoTree in ergoTrees)
+            {
+                taskList.Add(GetUnspentBoxesByErgoTree(ergoTree));
+            }
+
+            var result = await Task.WhenAll(taskList.ToList()).ConfigureAwait(false);
+            foreach (var unspent in result)
+            {
+                if (unspent != null) boxes.AddRange(unspent);
+            }
 
             return boxes;
         }
