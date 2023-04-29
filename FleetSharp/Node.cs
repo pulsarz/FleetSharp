@@ -86,6 +86,18 @@ namespace FleetSharp
 
             return box;
         }
+        public async Task<List<Box<long>?>> GetBoxes(List<string> boxIds)
+        {
+            var taskList = new List<Task<Box<long>?>>();
+
+            foreach (var boxId in boxIds)
+            {
+                taskList.Add(GetBox(boxId));
+            }
+
+            var result = await Task.WhenAll(taskList.ToList()).ConfigureAwait(false);
+            return result.ToList();
+        }
 
         public async Task<List<Box<long>>> GetUnspentBoxesByErgoTree(string ergoTree)
         {
@@ -163,12 +175,26 @@ namespace FleetSharp
             return balance;
         }
 
+        //Will run all addresses parallel!
+        public async Task<List<NodeBalance<long>>> GetAddressesBalances(List<string> addresses)
+        {
+            var taskList = new List<Task<NodeBalance<long>>>();
+
+            foreach (var address in addresses)
+            {
+                taskList.Add(GetAddressBalance(address));
+            }
+
+            var result = await Task.WhenAll(taskList.ToList()).ConfigureAwait(false);
+            return result.ToList();
+        }
+        /*
         public async Task<string?> ErgoTreeToAddress(string? ergoTree)
         {
             if (ergoTree == null) return null;
             NodeErgoTreeToAddress? address = await client.GetFromJsonAsync<NodeErgoTreeToAddress>($"{this.nodeURL}/utils/ergoTreeToAddress/{ergoTree}");
             return address.address;
-        }
+        }*/
 
         public async Task<NodeIndexedHeight?> GetIndexedHeight()
         {
@@ -191,14 +217,24 @@ namespace FleetSharp
         {
             if (tx == null) return null;
             //get input boxes
-            for (var i = 0; i < tx.inputs?.Count; i++)
+            /*for (var i = 0; i < tx.inputs?.Count; i++)
             {
                 if (tx.inputs[i] != null)
                 {
                     Box<long>? tempBox = await GetBox(tx.inputs[i]?.boxId);
                     tx.inputs[i] = tempBox;
                 }
+            }*/
+
+            var inputBoxIds = tx.inputs.Select(x => x.boxId).Where(x => x != null).ToList();
+            var inputBoxes = await GetBoxes(inputBoxIds);
+
+            tx.inputs = tx.inputs.Where(x => !inputBoxes.Exists(y => y.boxId == x.boxId)).ToList();
+            foreach (var tempBox in inputBoxes)
+            {
+                if (tempBox != null) tx.inputs.Add(tempBox);
             }
+
             /*
             //get input addresses from ergotree
             for (var i = 0; i < tx.inputs?.Count; i++)
