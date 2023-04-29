@@ -69,7 +69,7 @@ namespace FleetSharp.Sigma
             return VLQ.WriteVlqInt32(this, value);
         }
 
-        public SigmaWriter writeLongVlq(ulong value)
+        public SigmaWriter writeVlqInt64(ulong value)
         {
             return VLQ.WriteVlqInt64(this, value);
         }
@@ -82,13 +82,13 @@ namespace FleetSharp.Sigma
 
         public SigmaWriter writeLong(long value)
         {
-            writeLongVlq(ZigZag.long_to_zigzag(value));
+            writeVlqInt64(ZigZag.long_to_zigzag(value));
             return this;
         }
 
         public SigmaWriter writeInt(int value)
         {
-            this.writeLong((long)value);
+            this.writeLong(value);
             return this;
         }
 

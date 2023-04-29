@@ -90,7 +90,7 @@ namespace FleetSharp.Sigma
             return _createPrimitiveType(SigmaTypeCode.Long, null);
         }
 
-        public static dynamic SLong(int value)
+        public static dynamic SLong(long value)
         {
             return _createPrimitiveType(SigmaTypeCode.Long, value);
         }

@@ -66,9 +66,9 @@ namespace FleetSharp.Sigma
             return (uint)VLQ.ReadVlqInt32(this);
         }
 
-        public ulong readLongVlq()
+        public ulong readVlqInt64()
         {
-            return (ulong)VLQ.ReadVlqInt64(this);
+            return VLQ.ReadVlqInt64(this);
         }
 
         public short readShort()
@@ -78,7 +78,7 @@ namespace FleetSharp.Sigma
 
         public long readLong()
         {
-            return (long)ZigZag.zigzag_to_long(readLongVlq());
+            return ZigZag.zigzag_to_long(readVlqInt64());
         }
 
         public int readInt()

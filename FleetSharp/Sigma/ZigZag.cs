@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Numerics;
 using System.Text;
 
 namespace FleetSharp.Sigma
@@ -24,7 +25,7 @@ namespace FleetSharp.Sigma
 
         public static long zigzag_to_long(ulong zigzag)
         {
-            long abs = (long)(zigzag >> 1);
+            var abs = (long)(zigzag >> 1);
 
             if (zigzag % 2 > 0) return ~abs;
             else return abs;
@@ -32,7 +33,7 @@ namespace FleetSharp.Sigma
 
         public static ulong long_to_zigzag(long signed)
         {
-            ulong abs = (ulong)signed << 1;
+            var abs = (ulong)signed << 1;
 
             if (signed < 0) return ~abs;
             else return abs;

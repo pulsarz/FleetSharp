@@ -5,9 +5,18 @@ using System.Linq;
 using System.Numerics;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
+using System.Text.Json;
 
 namespace FleetSharp
 {
+    public static class ObjectExtensions
+    {
+        public static T Clone<T>(this T obj)
+        {
+            return JsonSerializer.Deserialize<T>(JsonSerializer.Serialize(obj));
+        }
+    }
+
     public class Tools
     {
         public static byte[] HexToBytes(string hex)
@@ -41,6 +50,16 @@ namespace FleetSharp
         public static byte[] BigIntegerToBytes(BigInteger value)
         {
             return value.ToByteArray();
+        }
+
+        public static int HexByteSize(string hex)
+        {
+            return (hex.Length / 2);
+        }
+
+        public static byte[] UTF8StringToBytes(string value)
+        {
+            return Encoding.UTF8.GetBytes(value);
         }
     }
 }

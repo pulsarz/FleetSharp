@@ -1,10 +1,13 @@
 ﻿using FleetSharp.Types;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Net.Http;
 using System.Net.Http.Json;
+using System.Numerics;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace FleetSharp
@@ -59,14 +62,14 @@ namespace FleetSharp
         }
 
         //Tries to find unspent + mempool first, if not found tries spent ones.
-        public async Task<NodeBox?> GetBox(string? boxId)
+        public async Task<Box<long>?> GetBox(string? boxId)
         {
-            NodeBox? box = null;
+            Box<long>? box = null;
             if (boxId == null) return null;
 
             try
             {
-                box = await client.GetFromJsonAsync<NodeBox>($"{this.nodeURL}/utxo/withPool/byId/{boxId}");
+                box = await client.GetFromJsonAsync<Box<long>>($"{this.nodeURL}/utxo/withPool/byId/{boxId}");
             }
             catch (Exception e)
             {
@@ -76,30 +79,30 @@ namespace FleetSharp
             if (box == null)
             {
                 //Retrieve box from blockchain indexer instead
-                box = await client.GetFromJsonAsync<NodeBox>($"{this.nodeURL}/blockchain/box/byId/{boxId}");
+                box = await client.GetFromJsonAsync<Box<long>>($"{this.nodeURL}/blockchain/box/byId/{boxId}");
             }
 
             return box;
         }
 
-        public async Task<List<NodeBox>?> GetUnspentBoxesByErgoTree(string? ergoTree)
+        public async Task<List<Box<long>>?> GetUnspentBoxesByErgoTree(string? ergoTree)
         {
-            List<NodeBox>? boxes = new List<NodeBox>();
-            List<NodeBox>? temp = null;
+            List<Box<long>>? boxes = new List<Box<long>>();
+            List<Box<long>>? temp = null;
             int limit = 1000;
 
             if (ergoTree == null) return null;
 
             do
             {
-                //temp = await client.GetFromJsonAsync<List<NodeBox>>($"{this.nodeURL}/blockchain/box/unspent/byErgoTree/{ergoTree}?offset={boxes.Count}&limit={limit}");
+                //temp = await client.GetFromJsonAsync<List<NodeBox>>($"{this.nodeURL}/blockchain/box/unspent/byErgoTree/{ergoTree}?offset={boxes.Count}&limit={limit}", jsonOptions);
                 temp = null;
                 //var response = await client.PostAsJsonAsync($"{this.nodeURL}/blockchain/box/unspent/byErgoTree?offset={boxes.Count}&limit={limit}", ergoTree);
                 var response = await client.PostAsync($"{this.nodeURL}/blockchain/box/unspent/byErgoTree?offset={boxes.Count}&limit={limit}", new StringContent(ergoTree, Encoding.UTF8, "application/json"));
                 var content = await response.Content.ReadAsStringAsync();
                 if (content != null && content != "")
                 {
-                    temp = JsonSerializer.Deserialize<List<NodeBox>>(content);
+                    temp = JsonSerializer.Deserialize<List<Box<long>>>(content);
 
                     if (temp != null)
                     {
@@ -112,19 +115,19 @@ namespace FleetSharp
             return boxes;
         }
 
-        public async Task<NodeToken?> GetToken(string? tokenId)
+        public async Task<TokenDetail<long>?> GetToken(string? tokenId)
         {
-            NodeToken? token = null;
+            TokenDetail<long>? token = null;
             if (tokenId == null) return null;
 
-            token = await client.GetFromJsonAsync<NodeToken>($"{this.nodeURL}/blockchain/token/byId/{tokenId}");
+            token = await client.GetFromJsonAsync<TokenDetail<long>>($"{this.nodeURL}/blockchain/token/byId/{tokenId}");
 
             return token;
         }
 
-        public async Task<NodeBalance?> GetAddressBalance(string? address)
+        public async Task<NodeBalance<long>?> GetAddressBalance(string? address)
         {
-            NodeBalance? balance = null;
+            NodeBalance<long>? balance = null;
 
             if (address == null) return null;
 
@@ -132,7 +135,7 @@ namespace FleetSharp
             var content = await response.Content.ReadAsStringAsync();
             if (content != null && content != "")
             {
-                balance = JsonSerializer.Deserialize<NodeBalance>(content);
+                balance = JsonSerializer.Deserialize<NodeBalance<long>>(content);
             }
 
             return balance;
@@ -170,11 +173,11 @@ namespace FleetSharp
             {
                 if (tx.inputs[i] != null)
                 {
-                    NodeBox? tempBox = await GetBox(tx.inputs[i]?.boxId);
+                    Box<long>? tempBox = await GetBox(tx.inputs[i]?.boxId);
                     tx.inputs[i] = tempBox;
                 }
             }
-
+            /*
             //get input addresses from ergotree
             for (var i = 0; i < tx.inputs?.Count; i++)
             {
@@ -191,7 +194,7 @@ namespace FleetSharp
                 {
                     tx.outputs[i].address = ErgoAddress.fromErgoTree(tx.outputs[i]?.ergoTree, Network.Mainnet).encode(Network.Mainnet);
                 }
-            }
+            }*/
 
             return tx;
         }

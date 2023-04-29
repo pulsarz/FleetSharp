@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Numerics;
 using System.Text;
 
 namespace FleetSharp.Sigma
@@ -29,7 +30,7 @@ namespace FleetSharp.Sigma
         {
             ulong value = 0;
             int shift = 0;
-            ulong lower7bits = 0;
+            uint lower7bits = 0;
 
             do
             {
@@ -90,6 +91,20 @@ namespace FleetSharp.Sigma
             while (value > 0);
 
             return writer;
+        }
+
+        public static uint EstimateVlqSize(long value)
+        {
+            uint size = 0;
+
+            do
+            {
+                size++;
+                value /= 128;
+            }
+            while (value > 0);
+
+            return size;
         }
     }
 }

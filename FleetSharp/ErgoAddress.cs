@@ -70,6 +70,11 @@ namespace FleetSharp
             return new byte[][] { };
         }
 
+        public byte[] GetErgoTree()
+        {
+            return _ergoTree;
+        }
+
         private string _encode(byte[] body, AddressType type, Network? network)
         {
             if (network == null)
