@@ -4,6 +4,7 @@ using SimpleBase;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http.Headers;
 using System.Text;
 
 namespace FleetSharp
@@ -30,12 +31,24 @@ namespace FleetSharp
             _network = network;
             _type = _getErgoTreeType(ergoTree);
         }
-        private Network _getEncodedNetworkType(byte[] addressBytes)
+
+        public static bool validateBytes(byte[] addressBytes)
+        {
+            return (addressBytes.Length < CHECKSUM_LENGTH);
+        }
+
+        public static bool validateBase58(string address)
+        {
+            var bytes = SimpleBase.Base58.Bitcoin.Decode(address);
+            return validateBytes(bytes);
+        }
+
+        private static Network _getEncodedNetworkType(byte[] addressBytes)
         {
             return (Network)(addressBytes.First() & 0xf0);
         }
 
-        private AddressType _getEncodedAddressType(byte[] addressBytes)
+        private static AddressType _getEncodedAddressType(byte[] addressBytes)
         {
             return (AddressType)(addressBytes.First() & 0xf);
         }
@@ -64,6 +77,45 @@ namespace FleetSharp
             return new ErgoAddress(P2PK_ERGOTREE_PREFIX.Concat(Tools.HexToBytes(publicKeyHex)).ToArray(), network);
         }
 
+        public static ErgoAddress fromHash(byte[] hashBytes, Network? network)
+        {
+            if (hashBytes.Length == 32)
+            {
+                hashBytes = hashBytes.Take(P2SH_HASH_LENGTH).ToArray();
+            }
+            else if (hashBytes.Length != P2SH_HASH_LENGTH)
+            {
+                throw new Exception($"Invalid hash length: {hashBytes.Length}");
+            }
+
+            var ergoTree = P2SH_ERGOTREE_PREFIX.Concat(hashBytes).Concat(P2SH_ERGOTREE_SUFFIX).ToArray();
+            return new ErgoAddress(ergoTree, network);
+        }
+
+        public static ErgoAddress fromBase58(string encodedAddress, bool skipCheck = false)
+        {
+            var bytes = SimpleBase.Base58.Bitcoin.Decode(encodedAddress);
+
+            //todo: validate
+
+            var network = _getEncodedNetworkType(bytes);
+            var type = _getEncodedAddressType(bytes);
+            var body = bytes.Skip(1).Take(bytes.Length - 1 - CHECKSUM_LENGTH).ToArray();
+
+            if (type == AddressType.P2PK)
+            {
+                return fromPublicKeyBytes(body, network);
+            }
+            else if (type == AddressType.P2SH)
+            {
+                return fromHash(body, network);
+            }
+            else
+            {
+                return new ErgoAddress(body, network);
+            }
+        }
+
         public byte[][] getPublicKeys()
         {
             if (_type == AddressType.P2PK) return new byte[][] { _ergoTree.Skip(P2PK_ERGOTREE_PREFIX.Length).ToArray() };
@@ -73,6 +125,11 @@ namespace FleetSharp
         public byte[] GetErgoTree()
         {
             return _ergoTree;
+        }
+
+        public string GetErgoTreeHex()
+        {
+            return Tools.BytesToHex(_ergoTree);
         }
 
         private string _encode(byte[] body, AddressType type, Network? network)
