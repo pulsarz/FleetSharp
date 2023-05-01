@@ -13,13 +13,13 @@ namespace FleetSharp.Models
 
     public class InputBox : Box<long>
     {
-        public ContextExtension extension { get; set; }
+        public ContextExtension extension { get; set; } = new ContextExtension();
 
     }
 
     public class ErgoUnsignedInput : ErgoBox
     {
-        private ContextExtension _extension;
+        private ContextExtension _extension = new ContextExtension();
 
         public ContextExtension extension
         {

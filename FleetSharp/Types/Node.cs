@@ -93,6 +93,50 @@ namespace FleetSharp.Types
 
     public class SignTXWrapper
     {
-        public ErgoUnsignedTransaction tx { get; set; }
+        public UnsignedTransaction tx { get; set; }
+    }
+
+    public class NodeParameters
+    {
+        public int? outputCost { get; set; }
+        public int? tokenAccessCost { get; set; }
+        public long? maxBlockCost { get; set; }
+        public long? height { get; set; }
+        public long? maxBlockSize { get; set; }
+        public int? dataInputCost { get; set; }
+        public int? blockVersion { get; set; }
+        public int? inputCost { get; set; }
+        public long? storageFeeFactor { get; set; }
+        public int? minValuePerByte { get; set; }
+    }
+
+    public class NodeInfo
+    {
+        public long? currentTime { get; set; }
+        public string? network { get; set; }
+        public string? name { get; set; }
+        public string? stateType { get; set; }
+        public long? difficulty { get; set; }
+        public string? bestFullHeaderId { get; set; }
+        public string? bestHeaderId { get; set; }
+        public int? peerCount { get; set; }
+        public int? unconfirmedCount { get; set; }
+        public string? appVersion { get; set; }
+        public bool? eip37Supported { get; set; }
+        public string? stateRoot { get; set; }
+        public string? genesisBlockId { get; set; }
+        public string? previousFullHeaderId { get; set; }
+        public long? fullHeight { get; set; }
+        public long? headersHeight { get; set; }
+        public string? stateVersion { get; set; }
+        public double? fullBlocksScore { get; set; }
+        public long? maxPeerHeight { get; set; }
+        public long? launchTime { get; set; }
+        public bool? isExplorer { get; set; }
+        public long? lastSeenMessageTime { get; set; }
+        public bool? eip27Supported { get; set; }
+        public double? headersScore { get; set; }
+        public NodeParameters? parameters { get; set; }
+        public bool? isMining { get; set; }
     }
 }

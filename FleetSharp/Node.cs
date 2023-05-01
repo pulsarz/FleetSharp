@@ -207,6 +207,17 @@ namespace FleetSharp
             return await client.GetFromJsonAsync<NodeIndexedHeight>($"{this.nodeURL}/blockchain/indexedHeight");
         }
 
+        public async Task<NodeInfo?> GetInfo()
+        {
+            return await client.GetFromJsonAsync<NodeInfo>($"{this.nodeURL}/info");
+        }
+
+        public async Task<long> GetCurrentHeight()
+        {
+            var info = await GetInfo();
+            return info?.fullHeight ?? 0;
+        }
+
         public async Task<bool> IsValidAddress(string? address)
         {
             if (address == null) return false;
@@ -220,16 +231,35 @@ namespace FleetSharp
         }
 
         //Sign an arbitrary transaction
-        public async Task<SignedTransaction?> SignTransaction(ErgoUnsignedTransaction tx)
+        public async Task<SignedTransaction?> SignTransaction(UnsignedTransaction tx)
         {
             SignTXWrapper wrapper = new SignTXWrapper() { tx = tx };
 
-            var response = await client.PostAsJsonAsync($"{this.nodeURL}/wallet/walletTransactionSign", wrapper, new JsonSerializerOptions { DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull });
+            var response = await client.PostAsJsonAsync($"{this.nodeURL}/wallet/transaction/sign", wrapper, new JsonSerializerOptions { DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull });
             var content = await response.Content.ReadAsStringAsync();
             if (content == null || content == "") return null;
 
             SignedTransaction? signed = JsonSerializer.Deserialize<SignedTransaction>(content);
             return signed;
+        }
+
+        public async Task<string?> SubmitSignedTransaction(SignedTransaction tx)
+        {
+            var response = await client.PostAsJsonAsync($"{this.nodeURL}/transactions", tx, new JsonSerializerOptions { DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull });
+            var content = await response.Content.ReadAsStringAsync();
+            if (content == null || content == "") return null;
+
+            string? transactionId = JsonSerializer.Deserialize<string>(content);
+            return transactionId;
+        }
+
+        public async Task<string?> SignAndSubmitTransaction(UnsignedTransaction tx)
+        {
+            var signedTX = await SignTransaction(tx);
+            if (signedTX == null) return null;
+
+            var transactionId = await SubmitSignedTransaction(signedTX);
+            return transactionId;
         }
 
         public async Task<NodeMempoolTransaction?> FillMissingInfoMempoolTX(NodeMempoolTransaction? tx)

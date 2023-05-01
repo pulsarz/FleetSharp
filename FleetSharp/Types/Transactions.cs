@@ -30,5 +30,6 @@ namespace FleetSharp.Types
         public List<SignedInput> inputs { get; set; }
         public List<DataInput> dataInputs { get; set; }
         public List<Box<long>> outputs { get; set; }
+        public long size { get; set; }
     }
 }
