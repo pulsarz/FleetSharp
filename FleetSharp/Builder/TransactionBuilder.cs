@@ -1,5 +1,8 @@
-﻿using FleetSharp.Models;
+﻿using FleetSharp.Builder.Selector;
+using FleetSharp.Models;
+using FleetSharp.Sigma;
 using FleetSharp.Types;
+using FleetSharp.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,14 +12,22 @@ using System.Threading.Tasks;
 
 namespace FleetSharp.Builder
 {
+    public class ChangeEstimationParams
+    {
+        public ErgoAddress changeAddress { get; set; }
+        public long creationHeight { get; set; }
+        public List<TokenAmount<long>> tokens { get; set; }
+        public int baseIndex { get; set; }
+        public int maxTokensPerBox { get; set; }
+    }
     public class TransactionBuilder
     {
         public const long RECOMMENDED_MIN_FEE_VALUE = 1100000;
         public const string FEE_CONTRACT = "1005040004000e36100204a00b08cd0279be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798ea02d192a39a8cc7a701730073011001020402d19683030193a38cc7b2a57300000193c2b2a57301007473027303830108cdeeac93b1a57304";
 
         //should be ErgoUnsignedInput or Box<Amount>
-        private List<dynamic> _inputs { get; set; }
-        private List<dynamic> _dataInputs { get; set; }
+        private List<ErgoUnsignedInput> _inputs { get; set; }
+        private List<ErgoUnsignedInput> _dataInputs { get; set; }
         private List<OutputBuilder> _outputs { get; set; }
         private TransactionBuilderSettings _settings { get; set; }
         private long _creationHeight { get; set; }
@@ -27,18 +38,18 @@ namespace FleetSharp.Builder
 
         public TransactionBuilder(long creationHeight)
         {
-            _inputs = new List<dynamic>();
-            _dataInputs = new List<dynamic>();
+            _inputs = new List<ErgoUnsignedInput>();
+            _dataInputs = new List<ErgoUnsignedInput>();
             _outputs = new List<OutputBuilder>();
             _settings = new TransactionBuilderSettings();
             _creationHeight = creationHeight;
         }
 
-        public List<dynamic> inputs()
+        public List<ErgoUnsignedInput> inputs()
         {
             return _inputs;
         }
-        public List<dynamic> dataInputs()
+        public List<ErgoUnsignedInput> dataInputs()
         {
             return _dataInputs;
         }
@@ -82,9 +93,16 @@ namespace FleetSharp.Builder
             return this;
         }
 
-        public TransactionBuilder from(List<dynamic> inputs)
+        public TransactionBuilder from(List<ErgoUnsignedInput> inputs)
         {
             _inputs.AddRange(inputs);
+
+            return this;
+        }
+
+        public TransactionBuilder from(List<Box<long>> inputs)
+        {
+            _inputs.AddRange(inputs.Select(x => new ErgoUnsignedInput(new InputBox { boxId = x.boxId, ergoTree = x.ergoTree, additionalRegisters = x.additionalRegisters, assets = x.assets, creationHeight = x.creationHeight, index = x.index, transactionId = x.transactionId, value = x.value })));
 
             return this;
         }
@@ -96,9 +114,16 @@ namespace FleetSharp.Builder
             return this;
         }
 
-        public TransactionBuilder withDataFrom(List<dynamic> dataInputs)
+        public TransactionBuilder withDataFrom(List<ErgoUnsignedInput> dataInputs)
         {
             _dataInputs.AddRange(dataInputs);
+
+            return this;
+        }
+
+        public TransactionBuilder withDataFrom(List<Box<long>> dataInputs)
+        {
+            _dataInputs.AddRange(dataInputs.Select(x => new ErgoUnsignedInput(new InputBox { boxId = x.boxId, ergoTree = x.ergoTree, additionalRegisters = x.additionalRegisters, assets = x.assets, creationHeight = x.creationHeight, index = x.index, transactionId = x.transactionId, value = x.value })));
 
             return this;
         }
@@ -189,7 +214,107 @@ namespace FleetSharp.Builder
             return false;
         }
 
-       /* public ErgoUnsignedTransaction build()
+        public BoxAmounts OutputSum(List<OutputBuilder> outputs, SelectionTarget<long>? basis = null)
+        {
+            Dictionary<string, long> tokens = new Dictionary<string, long>();
+            long nanoErgs = 0;
+
+            if (basis != null)
+            {
+                if (basis.nanoErgs != null)
+                {
+                    nanoErgs = basis.nanoErgs;
+                }
+
+                if (basis.tokens != null)
+                {
+                    foreach (var token in basis.tokens)
+                    {
+                        if (token.amount == null)
+                        {
+                            continue;
+                        }
+
+                        if (tokens.TryGetValue(token.tokenId, out var existingAmount))
+                        {
+                            tokens[token.tokenId] = existingAmount + token.amount;
+                        }
+                        else
+                        {
+                            tokens[token.tokenId] = token.amount;
+                        }
+                    }
+                }
+            }
+
+            foreach (var box in outputs)
+            {
+                nanoErgs += box.GetValue();
+                foreach (var token in box.GetAssets())
+                {
+                    if (tokens.TryGetValue(token.tokenId, out var existingAmount))
+                    {
+                        tokens[token.tokenId] = existingAmount + token.amount;
+                    }
+                    else
+                    {
+                        tokens[token.tokenId] = token.amount;
+                    }
+                }
+            }
+
+            return new BoxAmounts
+            {
+                nanoErgs = nanoErgs,
+                tokens = tokens.Select(token => new TokenAmount<long> { tokenId = token.Key, amount = token.Value }).ToList()
+            };
+        }
+
+        public long estimateChangeSize(ChangeEstimationParams parm)
+        {
+            var neededBoxes = (int)Math.Ceiling(parm.tokens.Count / Convert.ToDouble(parm.maxTokensPerBox));
+            var size = 0;
+            size += (int)VLQ.EstimateVlqSize(OutputBuilder.SAFE_MIN_BOX_VALUE);
+            size += Tools.HexByteSize(parm.changeAddress.GetErgoTreeHex());
+            size += (int)VLQ.EstimateVlqSize(parm.creationHeight);
+            size += (int)VLQ.EstimateVlqSize(0);//empty registers length
+            size += 32;//BLAKE_256_HASH_LENGTH
+
+            size = size * neededBoxes;
+            for (var i = 0; i < neededBoxes; i++)
+            {
+                size += (int)VLQ.EstimateVlqSize(parm.baseIndex + i);
+            }
+
+            size += parm.tokens.Aggregate(0, (acc, curr) => acc += Tools.HexByteSize(curr.tokenId) + (int)VLQ.EstimateVlqSize(curr.amount));
+
+            if (parm.tokens.Count > parm.maxTokensPerBox)
+            {
+                if (parm.tokens.Count % parm.maxTokensPerBox > 0)
+                {
+                    size += (int)VLQ.EstimateVlqSize(parm.maxTokensPerBox) * (parm.tokens.Count / parm.maxTokensPerBox);
+                    size += (int)VLQ.EstimateVlqSize(parm.tokens.Count % parm.maxTokensPerBox);
+                }
+                else
+                {
+                    size += (int)VLQ.EstimateVlqSize(parm.maxTokensPerBox) * neededBoxes;
+                }
+            }
+            else
+            {
+                size += (int)VLQ.EstimateVlqSize(parm.tokens.Count);
+            }
+
+            return size;
+        }
+
+        public long estimateMinChangeValue(ChangeEstimationParams parm)
+        {
+            var size = estimateChangeSize(parm);
+            return (size * OutputBuilder.BOX_VALUE_PER_BYTE);
+        }
+
+        public ErgoUnsignedTransaction build()
         {
             if (_isMinting())
             {
@@ -209,14 +334,117 @@ namespace FleetSharp.Builder
                 output.SetCreationHeight(_creationHeight, false);
             });
 
-            var outputsLocal = _outputs.Clone();
+            var outputsLocal = new List<OutputBuilder>(_outputs.ToArray());//clone
 
             if (_feeAmount != null)
             {
-                outputsLocal.Add(new OutputBuilder(_feeAmount, ErgoAddress.fromErgoTree(FEE_CONTRACT, Network.Mainnet)));
+                outputsLocal.Add(new OutputBuilder(_feeAmount ?? 0, ErgoAddress.fromErgoTree(FEE_CONTRACT, Network.Mainnet)));
             }
 
-            var selector = 
+            var selector = new BoxSelector<Box<long>>(_inputs.Select(x => new Box<long> { boxId = x.boxId, transactionId = x.transactionId, index = x.index, ergoTree = x.ergoTree, creationHeight = x.creationHeight, value = x.value, assets = x.assets, additionalRegisters = x.additionalRegisters }).ToList());
+
+            //todo: selector callbacks
+
+            var target = _burning?.Count > 0 ? OutputSum(outputsLocal, new SelectionTarget<long> { tokens = _burning?.Select(x => new TokenTargetAmount<long> { tokenId = x.tokenId, amount = x.amount }).ToList() }) : OutputSum(outputsLocal);
+            var inputs = selector.Select(new SelectionTarget<long> { nanoErgs = target.nanoErgs, tokens = target.tokens.Select(x => new TokenTargetAmount<long> { tokenId = x.tokenId, amount = x.amount }).ToList() });
+
+            if (_changeAddress != null)
+            {
+                BoxAmounts change = BoxUtils.UtxoSumResultDiff(BoxUtils.UtxoSum(inputs.Select(x => new MinimalBoxAmounts { value = x.value, assets = x.assets.Select(y => new TokenAmount<long> { tokenId = y.tokenId, amount = y.amount }).ToList() })), target);
+                var changeBoxes = new List<OutputBuilder>();
+
+                if (change.tokens?.Count > 0)
+                {
+                    var minRequiredNanoErgs = estimateMinChangeValue(new ChangeEstimationParams { changeAddress = _changeAddress, creationHeight = _creationHeight, tokens = change.tokens, maxTokensPerBox = settings().maxTokensPerChangeBox(), baseIndex = outputsLocal.Count + 1 });
+
+                    while (minRequiredNanoErgs > change.nanoErgs)
+                    {
+                        inputs = selector.Select(new SelectionTarget<long> { nanoErgs = target.nanoErgs + minRequiredNanoErgs, tokens = target.tokens.Select(x => new TokenTargetAmount<long> { tokenId = x.tokenId, amount = x.amount }).ToList() });
+
+                        change = BoxUtils.UtxoSumResultDiff(BoxUtils.UtxoSum(inputs.Select(x => new MinimalBoxAmounts { value = x.value, assets = x.assets.Select(y => new TokenAmount<long> { tokenId = y.tokenId, amount = y.amount }).ToList() })), target);
+                        minRequiredNanoErgs = estimateMinChangeValue(new ChangeEstimationParams { changeAddress = _changeAddress, creationHeight = _creationHeight, tokens = change.tokens, maxTokensPerBox = settings().maxTokensPerChangeBox(), baseIndex = outputsLocal.Count + 1 });
+                    }
+
+                    var chunkedTokens = Tools.ChunkBy(change.tokens, this._settings.maxTokensPerChangeBox());
+                    foreach (var tokens in chunkedTokens)
+                    {
+                        var output = new OutputBuilder(
+                            OutputBuilder.SAFE_MIN_BOX_VALUE,
+                            this._changeAddress,
+                            this._creationHeight
+                        ).AddTokens(tokens.ToList());
+                        output.SetValue(output.estimateMinBoxValue());
+
+                        change.nanoErgs -= output.GetValue();
+                        changeBoxes.Add(output);
+                    }
+                }
+
+                if (change.nanoErgs > 0)
+                {
+                    if (changeBoxes.Any())
+                    {
+                        if (settings().shouldIsolateErgOnChange())
+                        {
+                            outputsLocal.Add(new OutputBuilder(change.nanoErgs, _changeAddress));
+                        }
+                        else
+                        {
+                            var firstChangeBox = changeBoxes.First();
+                            firstChangeBox.SetValue(firstChangeBox.GetValue() + change.nanoErgs);
+                        }
+
+                        outputsLocal.AddRange(changeBoxes);
+                    }
+                    else
+                    {
+                        outputsLocal.Add(new OutputBuilder(change.nanoErgs, _changeAddress));
+                    }
+                }
+            }
+
+            foreach (var input in inputs)
+            {
+                var temp = new ErgoBox(input);
+                if (!temp.isValid())
+                {
+                    throw new Exception($"Invalid input {input.boxId}");
+                }
+            }
+            var unsignedTransaction = new ErgoUnsignedTransaction(
+                inputs.Select(x => new ErgoUnsignedInput(new InputBox { boxId = x.boxId, ergoTree = x.ergoTree, additionalRegisters = x.additionalRegisters, assets = x.assets, creationHeight = x.creationHeight, index = x.index, transactionId = x.transactionId, value = x.value }))
+                , dataInputs()
+                , outputsLocal.Select(x => x.SetCreationHeight(_creationHeight, false).build()));
+
+            var burning = unsignedTransaction.burning();
+            if (burning.nanoErgs > 0)
+            {
+                throw new Exception("It's not possible to burn ERG!");
+            }
+            if (burning.tokens.Any() && _burning.Any())
+            {
+                burning = BoxUtils.UtxoSumResultDiff(burning, new BoxAmounts { nanoErgs = 0, tokens = _burning });
+            }
+
+            if (!settings().canBurnTokens() && burning.tokens.Any())
+            {
+                throw new Exception("Token burning not allowed!");
+            }
+
+            return unsignedTransaction;
+        }
+        /*
+        public ErgoUnsignedTransaction test()
+        {
+            var changeAddress = ErgoAddress.fromBase58("9fwTmAApbyYTfv6ZPELpC5iFkyNBtt3XNfsauUMX4Jm7mfYtb4p");
+
+
+            var tx = new TransactionBuilder(993851)
+                .from()
+                .to(new List<OutputBuilder> { new OutputBuilder(1000000, ErgoAddress.fromBase58("9hGgu7AqR9ki7zsHqMkzQW7egvMPYF7unzjpG5Ru4K57JT2grHr")) })
+                .sendChangeTo(changeAddress)
+                .payMinFee()
+                .build();
         }*/
     }
 }

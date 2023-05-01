@@ -14,6 +14,7 @@ namespace FleetSharp.Models
     public class InputBox : Box<long>
     {
         public ContextExtension extension { get; set; }
+
     }
 
     public class ErgoUnsignedInput : ErgoBox

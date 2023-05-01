@@ -1,4 +1,5 @@
-﻿using FleetSharp.Types;
+﻿using FleetSharp.Models;
+using FleetSharp.Types;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -18,10 +19,15 @@ namespace FleetSharp
     {
         private static HttpClient client = new HttpClient();
 
-        public string nodeURL;
+        private string nodeURL;
+        private string apiKey;
 
-        public NodeInterface(string nodeURL) {
+        public NodeInterface(string nodeURL, string? apiKey = null) {
             this.nodeURL = nodeURL;
+            this.apiKey = apiKey;
+
+            //add api key
+            if (apiKey != null) client.DefaultRequestHeaders.Add("api_key", apiKey);
         }
 
         //take should not be hiogher then 100
@@ -211,6 +217,19 @@ namespace FleetSharp
             IsValidAddress? valid = JsonSerializer.Deserialize<IsValidAddress>(content);
             if (valid == null) return false;
             return valid.isValid;
+        }
+
+        //Sign an arbitrary transaction
+        public async Task<SignedTransaction?> SignTransaction(ErgoUnsignedTransaction tx)
+        {
+            SignTXWrapper wrapper = new SignTXWrapper() { tx = tx };
+
+            var response = await client.PostAsJsonAsync($"{this.nodeURL}/wallet/walletTransactionSign", wrapper, new JsonSerializerOptions { DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull });
+            var content = await response.Content.ReadAsStringAsync();
+            if (content == null || content == "") return null;
+
+            SignedTransaction? signed = JsonSerializer.Deserialize<SignedTransaction>(content);
+            return signed;
         }
 
         public async Task<NodeMempoolTransaction?> FillMissingInfoMempoolTX(NodeMempoolTransaction? tx)

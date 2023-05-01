@@ -11,9 +11,9 @@ namespace FleetSharp
 {
     public class ErgoAddress
     {
-        private static byte[] _ergoTree;
-        private static Network? _network;
-        private static AddressType _type;
+        private byte[] _ergoTree;
+        private Network? _network;
+        private AddressType _type;
 
         private static int CHECKSUM_LENGTH = 4;
 

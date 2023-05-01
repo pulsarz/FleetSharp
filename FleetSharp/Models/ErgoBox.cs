@@ -44,7 +44,7 @@ namespace FleetSharp.Models
 
         public static bool validate(dynamic box)
         {
-            byte[] bytes = BoxSerializer.serializeBox(box).ToBytes();
+            byte[] bytes = BoxSerializer.serializeBox(box).toBytes();
             string hash =  Tools.BytesToHex(Blake2b.ComputeHash(32, bytes));
 
             return box.boxId == hash;

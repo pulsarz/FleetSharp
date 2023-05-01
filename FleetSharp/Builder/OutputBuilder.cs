@@ -2,6 +2,7 @@
 using FleetSharp.Types;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
 using System.Text;
@@ -25,15 +26,21 @@ namespace FleetSharp.Builder
 
         private NewToken<long>? _minting { get; set; }
 
-        public static long estimateMinBoxValue(dynamic box, long valuePerByte = BOX_VALUE_PER_BYTE)
+
+        public long estimateMinBoxValue(long valuePerByte = BOX_VALUE_PER_BYTE)
         {
             long valuePerByteBigInt = valuePerByte;
-            return BoxSerializer.estimateBoxSize(box, SAFE_MIN_BOX_VALUE) * valuePerByteBigInt;
+            return BoxSerializer.estimateBoxSize(build(), SAFE_MIN_BOX_VALUE) * valuePerByteBigInt;
         }
+
 
         public OutputBuilder(long value, ErgoAddress recipient, long? creationHeight = null)
         {
-            
+            SetValue(value);
+            _creationHeight = creationHeight;
+            _assets = new List<TokenAmount<long>>();
+            _registers = new NonMandatoryRegisters { };
+            _address = recipient;
         }
 
         public long GetValue()
@@ -80,7 +87,7 @@ namespace FleetSharp.Builder
             return this;
         }
 
-        public OutputBuilder AddTokens(TokenAmount<long> token)
+        public OutputBuilder AddToken(TokenAmount<long> token)
         {
             _assets.Add(token);
 
@@ -134,11 +141,11 @@ namespace FleetSharp.Builder
         }
 
         //Either UnsignedInput or Box<Amount>
-        public BoxCandidate<long> build(List<dynamic>? transactionInputs)
+        public BoxCandidate<long> build(List<dynamic>? transactionInputs = null)
         {
             var tokens = GetAssets();
 
-            if (minting != null)
+            if (minting() != null)
             {
                 if (transactionInputs == null || transactionInputs.Count == 0) throw new ArgumentException("Undefined minting context!");
 

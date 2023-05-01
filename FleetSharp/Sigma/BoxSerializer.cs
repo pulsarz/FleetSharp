@@ -52,10 +52,10 @@ namespace FleetSharp.Sigma
 
         private static bool isBox(dynamic box)
         {
-            if (box is Box<string> || box is ErgoBox || box is BoxCandidate<long> || box is OutputBuilder)
-            {
-                return box.transactionId != null && box.index != null;
-            }
+            if (box is Box<long>) return box.transactionId != null && box.transactionId != "" && box.index != null;
+            if (box is ErgoBox) return box.transactionId != null && box.transactionId != "" && box.index != null;
+            if (box is BoxCandidate<long>) return false;//no txid
+            if (box is ErgoBox) return false;
 
             return false;
         }

@@ -29,7 +29,7 @@ namespace FleetSharp.Utils
             return UtxoSum(boxes, null);
         }
 
-        public static dynamic UtxoSum(IEnumerable<MinimalBoxAmounts> boxes, string? tokenId)
+        public static dynamic UtxoSum(IEnumerable<MinimalBoxAmounts> boxes, string? tokenId = null)
         {
             var balances = new Dictionary<string, long>();
 

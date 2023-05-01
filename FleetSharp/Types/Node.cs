@@ -1,4 +1,5 @@
-﻿using System;
+﻿using FleetSharp.Models;
+using System;
 using System.Collections.Generic;
 using System.Numerics;
 using System.Text;
@@ -88,5 +89,10 @@ namespace FleetSharp.Types
         public string? error { get; set; }
         public string? address { get; set; }
         public bool isValid { get; set; }
+    }
+
+    public class SignTXWrapper
+    {
+        public ErgoUnsignedTransaction tx { get; set; }
     }
 }
