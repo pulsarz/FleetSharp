@@ -411,10 +411,11 @@ namespace FleetSharp.Builder
                     throw new Exception($"Invalid input {input.boxId}");
                 }
             }
+            var newInputs = inputs.Select(x => new ErgoUnsignedInput(new InputBox { boxId = x.boxId, ergoTree = x.ergoTree, additionalRegisters = x.additionalRegisters, assets = x.assets, creationHeight = x.creationHeight, index = x.index, transactionId = x.transactionId, value = x.value }));
             var unsignedTransaction = new ErgoUnsignedTransaction(
-                inputs.Select(x => new ErgoUnsignedInput(new InputBox { boxId = x.boxId, ergoTree = x.ergoTree, additionalRegisters = x.additionalRegisters, assets = x.assets, creationHeight = x.creationHeight, index = x.index, transactionId = x.transactionId, value = x.value }))
+                newInputs
                 , dataInputs()
-                , outputsLocal.Select(x => x.SetCreationHeight(_creationHeight, false).build()));
+                , outputsLocal.Select(x => x.SetCreationHeight(_creationHeight, false).build(newInputs.ToList())));
 
             var burning = unsignedTransaction.burning();
             if (burning.nanoErgs > 0)

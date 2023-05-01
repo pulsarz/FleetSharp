@@ -1,4 +1,5 @@
-﻿using FleetSharp.Sigma;
+﻿using FleetSharp.Models;
+using FleetSharp.Sigma;
 using FleetSharp.Types;
 using System;
 using System.Collections.Generic;
@@ -11,8 +12,6 @@ using System.Threading.Tasks;
 namespace FleetSharp.Builder
 {
     //Partially loaned from https://github.com/fleet-sdk/fleet/blob/master/packages/core/src/builder/outputBuilder.ts
-    //No minting yet
-    //No BoxValueEstimationCallback yet
     public class OutputBuilder
     {
         public const long BOX_VALUE_PER_BYTE = 360;
@@ -140,8 +139,7 @@ namespace FleetSharp.Builder
             return this;
         }
 
-        //Either UnsignedInput or Box<Amount>
-        public BoxCandidate<long> build(List<dynamic>? transactionInputs = null)
+        public BoxCandidate<long> build(List<ErgoUnsignedInput>? transactionInputs = null)
         {
             var tokens = GetAssets();
 
