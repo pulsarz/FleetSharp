@@ -156,11 +156,11 @@ namespace FleetSharp
             return boxes;
         }
 
-        public async Task<List<Box<long>>> GetAllUnspentBoxesInWallet(bool considerMempool = true)
+        public async Task<List<Box<long>>?> GetAllUnspentBoxesInWallet(bool considerMempool = true)
         {
-            var boxes = await client.GetFromJsonAsync<List<Box<long>>>($"{this.nodeURL}/wallet/boxes/unspent?minConfirmations={(considerMempool ? "-1" : "0")}");
+            var boxes = await client.GetFromJsonAsync<List<WalletBoxesUnspent>>($"{this.nodeURL}/wallet/boxes/unspent?minConfirmations={(considerMempool ? "-1" : "0")}");
 
-            return boxes;
+            return boxes?.Select(x => x.box)?.ToList();
         }
 
         public async Task<TokenDetail<long>?> GetToken(string? tokenId)

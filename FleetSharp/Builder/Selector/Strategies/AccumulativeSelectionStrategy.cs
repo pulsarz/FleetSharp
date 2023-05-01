@@ -1,4 +1,5 @@
-﻿using FleetSharp.Types;
+﻿using FleetSharp.Models;
+using FleetSharp.Types;
 using FleetSharp.Utils;
 using System;
 using System.Collections.Generic;
@@ -11,13 +12,13 @@ namespace FleetSharp.Builder.Selector.Strategies
 {
     public class AccumulativeSelectionStrategy<T> : ISelectionStrategy<long>
     {
-        private List<Box<long>> _inputs = new List<Box<long>>();
+        private List<ErgoUnsignedInput> _inputs = new List<ErgoUnsignedInput>();
 
-        public List<Box<long>> Select(List<Box<long>> inputs, SelectionTarget<long>? target = null)
+        public List<ErgoUnsignedInput> Select(List<ErgoUnsignedInput> inputs, SelectionTarget<long>? target = null)
         {
             _inputs = inputs;
 
-            var selection = new List<Box<long>>();
+            var selection = new List<ErgoUnsignedInput>();
             if (target?.tokens?.Any() == true)
             {
                 selection.AddRange(_selectTokens(target.tokens));
@@ -39,9 +40,9 @@ namespace FleetSharp.Builder.Selector.Strategies
             return selection;
         }
 
-        private List<Box<long>> _selectTokens(IEnumerable<TokenTargetAmount<long>> targets)
+        private List<ErgoUnsignedInput> _selectTokens(IEnumerable<TokenTargetAmount<long>> targets)
         {
-            var selection = new List<Box<long>>();
+            var selection = new List<ErgoUnsignedInput>();
 
             foreach (var target in targets)
             {
@@ -60,11 +61,11 @@ namespace FleetSharp.Builder.Selector.Strategies
             return selection;
         }
 
-        private List<Box<long>> _select(long target, string? tokenId = null)
+        private List<ErgoUnsignedInput> _select(long target, string? tokenId = null)
         {
             var inputs = _inputs;
             var acc = default(long);
-            var selection = new List<Box<long>>();
+            var selection = new List<ErgoUnsignedInput>();
 
             if (target == 0)
             {

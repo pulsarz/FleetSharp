@@ -1,4 +1,5 @@
-﻿using FleetSharp.Types;
+﻿using FleetSharp.Models;
+using FleetSharp.Types;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,6 +10,6 @@ namespace FleetSharp.Builder.Selector.Strategies
 {
     public interface ISelectionStrategy<T>
     {
-        List<Box<T>> Select(List<Box<T>> inputs, SelectionTarget<T>? target = null);
+        List<ErgoUnsignedInput> Select(List<ErgoUnsignedInput> inputs, SelectionTarget<T>? target = null);
     }
 }

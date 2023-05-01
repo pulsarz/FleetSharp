@@ -366,7 +366,7 @@ namespace FleetSharp.Builder
                 outputsLocal.Add(new OutputBuilder(_feeAmount ?? 0, ErgoAddress.fromErgoTree(FEE_CONTRACT, Network.Mainnet)));
             }
 
-            var selector = new BoxSelector<Box<long>>(_inputs.Select(x => new Box<long> { boxId = x.boxId, transactionId = x.transactionId, index = x.index, ergoTree = x.ergoTree, creationHeight = x.creationHeight, value = x.value, assets = x.assets, additionalRegisters = x.additionalRegisters }).ToList());
+            var selector = new BoxSelector<ErgoUnsignedInput>(_inputs);
             
             //Make sure any forced boxes get included.
             selector = selector.ensureInclusion(_inputsForcedInclusionBoxIds);
@@ -433,17 +433,17 @@ namespace FleetSharp.Builder
 
             foreach (var input in inputs)
             {
-                var temp = new ErgoBox(input);
+                var temp = new ErgoBox(new Box<long> { boxId = input.boxId, transactionId = input.transactionId, index = input.index, ergoTree = input.ergoTree, creationHeight = input.creationHeight, value = input.value, assets = input.assets, additionalRegisters = input.additionalRegisters });
                 if (!temp.isValid())
                 {
                     throw new Exception($"Invalid input {input.boxId}");
                 }
             }
-            var newInputs = inputs.Select(x => new ErgoUnsignedInput(new InputBox { boxId = x.boxId, ergoTree = x.ergoTree, additionalRegisters = x.additionalRegisters, assets = x.assets, creationHeight = x.creationHeight, index = x.index, transactionId = x.transactionId, value = x.value }));
+
             var unsignedTransaction = new ErgoUnsignedTransaction(
-                newInputs
+                inputs
                 , dataInputs()
-                , outputsLocal.Select(x => x.SetCreationHeight(_creationHeight, false).build(newInputs.ToList())));
+                , outputsLocal.Select(x => x.SetCreationHeight(_creationHeight, false).build(inputs)));
 
             var burning = unsignedTransaction.burning();
             if (burning.nanoErgs > 0)

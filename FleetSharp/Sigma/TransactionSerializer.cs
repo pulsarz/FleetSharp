@@ -56,12 +56,12 @@ namespace FleetSharp.Sigma
             writeExtension(writer, input.extension);
         }
 
-        public static void writeExtension(SigmaWriter writer, ContextExtension extension)
+        public static void writeExtension(SigmaWriter writer, Dictionary<int, string?> extension)
         {
-            writer.writeVlq((uint)extension.extensions.Count);
-            if (extension.extensions.Count == 0) return;
+            writer.writeVlq((uint)extension.Count);
+            if (extension.Count == 0) return;
 
-            foreach (var ext in extension.extensions)
+            foreach (var ext in extension)
             {
                 writer.writeVlq((uint)ext.Key).writeBytes(Tools.HexToBytes(ext.Value));
             }

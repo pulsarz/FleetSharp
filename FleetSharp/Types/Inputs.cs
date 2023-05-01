@@ -18,7 +18,7 @@ namespace FleetSharp.Types
     public class UnsignedInput  
     {
         public string boxId { get; set; }
-        public ContextExtension extension { get; set; } = new ContextExtension();
+        public Dictionary<int, string?> extension { get; set; } = new Dictionary<int, string?>();
     }
 
     public class EIP12UnsignedInput : UnsignedInput

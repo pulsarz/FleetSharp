@@ -139,4 +139,16 @@ namespace FleetSharp.Types
         public NodeParameters? parameters { get; set; }
         public bool? isMining { get; set; }
     }
+
+    public class WalletBoxesUnspent
+    {
+        public int? confirmationsNum { get; set; }
+        public string? address { get; set; }
+        public string? creationTransaction { get; set; }
+        public List<int>? scans { get; set; }
+        public bool? onchain { get; set; }
+        public int? creationOutIndex { get; set; }
+        public string? spendingTransaction { get; set; }
+        public Box<long>? box { get; set; }
+    }
 }

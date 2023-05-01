@@ -9,9 +9,9 @@ namespace FleetSharp.Types
     public class ProverResult
     {
         public string proofBytes { get; }
-        public ContextExtension extension { get; }
+        public Dictionary<int, string?> extension { get; set; }
 
-        public ProverResult(string proofBytes, ContextExtension extension)
+        public ProverResult(string proofBytes, Dictionary<int, string?> extension)
         {
             this.proofBytes = proofBytes;
             this.extension = extension;

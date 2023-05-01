@@ -1,4 +1,5 @@
 ﻿using FleetSharp.Builder.Selector.Strategies;
+using FleetSharp.Models;
 using FleetSharp.Types;
 using FleetSharp.Utils;
 using System;
@@ -17,33 +18,33 @@ namespace FleetSharp.Builder.Selector
         public List<TokenTargetAmount<T>>? tokens { get; set; }
     }
     
-    public class BoxSelector<T> where T : Box<long>
+    public class BoxSelector<T> where T : ErgoUnsignedInput
 
     {
-        private List<Box<long>> _inputs { get; set; }
+        private List<ErgoUnsignedInput> _inputs { get; set; }
         private ISelectionStrategy<long>? _strategy;
-        private FilterPredicate<Box<long>>? _ensureFilterPredicate;
-        private SortingSelector<Box<long>>? _inputsSortSelector;
+        private FilterPredicate<ErgoUnsignedInput>? _ensureFilterPredicate;
+        private SortingSelector<ErgoUnsignedInput>? _inputsSortSelector;
         private SortingDirection? _inputsSortDir;
         private HashSet<string>? _ensureInclusionBoxIds;
 
-        public BoxSelector(List<Box<long>> inputs)
+        public BoxSelector(List<ErgoUnsignedInput> inputs)
         {
             _inputs = inputs;
         }
 
         //todo custom selector
 
-        public List<Box<long>> Select(SelectionTarget<long> target)
+        public List<ErgoUnsignedInput> Select(SelectionTarget<long> target)
         {
             if (_strategy == null)
             {
-                _strategy = new AccumulativeSelectionStrategy<Box<long>>();
+                _strategy = new AccumulativeSelectionStrategy<ErgoUnsignedInput>();
             }
 
             var remaining = DeepCloneTarget(target);
-            var unselected = new List<Box<long>>(_inputs);
-            var selected = new List<Box<long>>();
+            var unselected = new List<ErgoUnsignedInput>(_inputs);
+            var selected = new List<ErgoUnsignedInput>();
 
             var predicate = _ensureFilterPredicate;
             var inclusion = _ensureInclusionBoxIds;
@@ -133,7 +134,7 @@ namespace FleetSharp.Builder.Selector
             };
         }
 
-        private SelectionTarget<long> _getUnreachedTargets(List<Box<long>> inputs, SelectionTarget<long> target)
+        private SelectionTarget<long> _getUnreachedTargets(List<ErgoUnsignedInput> inputs, SelectionTarget<long> target)
         {
             SelectionTarget<long> unreached = new SelectionTarget<long> {  };
             long selectedNanoergs = inputs.Sum(input => input.value);
@@ -174,7 +175,7 @@ namespace FleetSharp.Builder.Selector
             return unreached;
         }
 
-        public BoxSelector<T> ensureInclusion(FilterPredicate<Box<long>> predicate)
+        public BoxSelector<T> ensureInclusion(FilterPredicate<ErgoUnsignedInput> predicate)
         {
             if (predicate == null)
             {
@@ -205,7 +206,7 @@ namespace FleetSharp.Builder.Selector
             return this;
         }
         /*
-        public BoxSelector<T> ensureInclusion(FilterPredicate<Box<long>> predicateOrBoxIds)
+        public BoxSelector<T> ensureInclusion(FilterPredicate<ErgoUnsignedInput> predicateOrBoxIds)
         {
             if (predicateOrBoxIds == null)
             {
@@ -214,13 +215,13 @@ namespace FleetSharp.Builder.Selector
 
             return predicateOrBoxIds switch
             {
-                FilterPredicate<Box<long>> predicate => ensureInclusion(predicate),
+                FilterPredicate<ErgoUnsignedInput> predicate => ensureInclusion(predicate),
                 List<string> boxIds => ensureInclusion(boxIds),
                 _ => throw new ArgumentException("Invalid argument type", nameof(predicateOrBoxIds)),
             };
         }
         */
-        public BoxSelector<T> orderBy(SortingSelector<Box<long>> selector, SortingDirection? direction = null)
+        public BoxSelector<T> orderBy(SortingSelector<ErgoUnsignedInput> selector, SortingDirection? direction = null)
         {
             if (selector == null)
             {
@@ -237,7 +238,7 @@ namespace FleetSharp.Builder.Selector
             return (obj is ISelectionStrategy<long> myObj);
         }
 
-        public static SelectionTarget<long> BuildTargetFrom(IEnumerable<Box<long>> boxes)
+        public static SelectionTarget<long> BuildTargetFrom(IEnumerable<ErgoUnsignedInput> boxes)
         {
             if (boxes == null)
             {

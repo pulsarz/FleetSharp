@@ -13,15 +13,14 @@ namespace FleetSharp.Models
 
     public class InputBox : Box<long>
     {
-        public ContextExtension extension { get; set; } = new ContextExtension();
-
+        public Dictionary<int, string?> extension { get; set; } = new Dictionary<int, string?>();
     }
 
     public class ErgoUnsignedInput : ErgoBox
     {
-        private ContextExtension _extension = new ContextExtension();
+        private Dictionary<int, string?> _extension = new Dictionary<int, string?>();
 
-        public ContextExtension extension
+        public Dictionary<int, string?> extension
         {
             get { return _extension; }
             set { _extension = value; }
@@ -35,7 +34,7 @@ namespace FleetSharp.Models
             }
         }
 
-        public ErgoUnsignedInput SetContextVars(ContextExtension extension)
+        public ErgoUnsignedInput SetContextVars(Dictionary<int, string?> extension)
         {
             this._extension = extension;
 
