@@ -7,6 +7,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Numerics;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -151,6 +152,13 @@ namespace FleetSharp
             {
                 if (unspent != null) boxes.AddRange(unspent);
             }
+
+            return boxes;
+        }
+
+        public async Task<List<Box<long>>> GetAllUnspentBoxesInWallet(bool considerMempool = true)
+        {
+            var boxes = await client.GetFromJsonAsync<List<Box<long>>>($"{this.nodeURL}/wallet/boxes/unspent?minConfirmations={(considerMempool ? "-1" : "0")}");
 
             return boxes;
         }

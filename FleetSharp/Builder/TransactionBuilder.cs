@@ -27,6 +27,7 @@ namespace FleetSharp.Builder
 
         //should be ErgoUnsignedInput or Box<Amount>
         private List<ErgoUnsignedInput> _inputs { get; set; }
+        private List<string> _inputsForcedInclusionBoxIds { get; set; }
         private List<ErgoUnsignedInput> _dataInputs { get; set; }
         private List<OutputBuilder> _outputs { get; set; }
         private TransactionBuilderSettings _settings { get; set; }
@@ -39,6 +40,7 @@ namespace FleetSharp.Builder
         public TransactionBuilder(long creationHeight)
         {
             _inputs = new List<ErgoUnsignedInput>();
+            _inputsForcedInclusionBoxIds = new List<string>();
             _dataInputs = new List<ErgoUnsignedInput>();
             _outputs = new List<OutputBuilder>();
             _settings = new TransactionBuilderSettings();
@@ -48,6 +50,10 @@ namespace FleetSharp.Builder
         public List<ErgoUnsignedInput> inputs()
         {
             return _inputs;
+        }
+        public List<string> inputsForcedInclusion()
+        {
+            return _inputsForcedInclusionBoxIds;
         }
         public List<ErgoUnsignedInput> dataInputs()
         {
@@ -107,6 +113,23 @@ namespace FleetSharp.Builder
             return this;
         }
 
+        //Boxes added through this method will always be included in the input selection
+        public TransactionBuilder fromForcedInclusion(List<ErgoUnsignedInput> inputs)
+        {
+            from(inputs);
+            _inputsForcedInclusionBoxIds.AddRange(inputs.Select(x => x.boxId));
+
+            return this;
+        }
+
+        public TransactionBuilder fromForcedInclusion(List<Box<long>> inputs)
+        {
+            from(inputs);
+            _inputsForcedInclusionBoxIds.AddRange(inputs.Select(x => x.boxId));
+
+            return this;
+        }
+
         public TransactionBuilder to(List<OutputBuilder> outputs)
         {
             _outputs.AddRange(outputs);
@@ -156,6 +179,8 @@ namespace FleetSharp.Builder
 
             return this;
         }
+
+
 
         private bool _isMinting()
         {
@@ -342,6 +367,9 @@ namespace FleetSharp.Builder
             }
 
             var selector = new BoxSelector<Box<long>>(_inputs.Select(x => new Box<long> { boxId = x.boxId, transactionId = x.transactionId, index = x.index, ergoTree = x.ergoTree, creationHeight = x.creationHeight, value = x.value, assets = x.assets, additionalRegisters = x.additionalRegisters }).ToList());
+            
+            //Make sure any forced boxes get included.
+            selector = selector.ensureInclusion(_inputsForcedInclusionBoxIds);
 
             //todo: selector callbacks
 

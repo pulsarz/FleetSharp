@@ -1,6 +1,9 @@
 ﻿using FleetSharp.Models;
 using FleetSharp.Sigma;
 using FleetSharp.Types;
+using static FleetSharp.Sigma.ConstantSerializer;
+using static FleetSharp.Sigma.ISigmaCollection;
+using static FleetSharp.Sigma.IPrimitiveSigmaType;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -151,9 +154,9 @@ namespace FleetSharp.Builder
                 if (registers == null || (registers.R4 == null && registers.R5 == null && registers.R6 == null && registers.R7 == null && registers.R8 == null && registers.R9 == null))
                 {
                     SetAdditionalRegisters(new NonMandatoryRegisters {
-                        R4 = ConstantSerializer.SConstant(ISigmaCollection.SColl(SigmaTypeCode.Byte, Tools.UTF8StringToBytes(minting().name ?? ""))),
-                        R5 = ConstantSerializer.SConstant(ISigmaCollection.SColl(SigmaTypeCode.Byte, Tools.UTF8StringToBytes(minting().description ?? ""))),
-                        R6 = ConstantSerializer.SConstant(ISigmaCollection.SColl(SigmaTypeCode.Byte, Tools.UTF8StringToBytes(minting().decimals?.ToString() ?? "0")))
+                        R4 = SConstant(SColl(SigmaTypeCode.Byte, Tools.UTF8StringToBytes(minting().name ?? ""))),
+                        R5 = SConstant(SColl(SigmaTypeCode.Byte, Tools.UTF8StringToBytes(minting().description ?? ""))),
+                        R6 = SConstant(SColl(SigmaTypeCode.Byte, Tools.UTF8StringToBytes(minting().decimals?.ToString() ?? "0")))
                     });
                 }
 
