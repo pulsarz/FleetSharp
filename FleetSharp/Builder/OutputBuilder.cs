@@ -147,7 +147,8 @@ namespace FleetSharp.Builder
             {
                 if (transactionInputs == null || transactionInputs.Count == 0) throw new ArgumentException("Undefined minting context!");
 
-                if (GetAdditionalRegisters() == null)
+                var registers = GetAdditionalRegisters();
+                if (registers == null || (registers.R4 == null && registers.R5 == null && registers.R6 == null && registers.R7 == null && registers.R8 == null && registers.R9 == null))
                 {
                     SetAdditionalRegisters(new NonMandatoryRegisters {
                         R4 = ConstantSerializer.SConstant(ISigmaCollection.SColl(SigmaTypeCode.Byte, Tools.UTF8StringToBytes(minting().name ?? ""))),
