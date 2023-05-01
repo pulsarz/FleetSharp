@@ -30,12 +30,12 @@ namespace FleetSharp.Sigma
         {
             ulong value = 0;
             int shift = 0;
-            uint lower7bits = 0;
+            byte lower7bits = 0;
 
             do
             {
                 lower7bits = r.readByte();
-                value |= (lower7bits & 0x7f) << shift;
+                value |= (ulong)(lower7bits & 0x7f) << shift;
                 shift += 7;
             }
             while ((lower7bits & 0x80) != 0);
