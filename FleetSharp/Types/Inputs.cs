@@ -15,10 +15,10 @@ namespace FleetSharp.Types
         public ProverResult spendingProof { get; set; }
     }
 
-    public class UnsignedInput
+    public class UnsignedInput  
     {
         public string boxId { get; set; }
-        public ContextExtension extension { get; set; }
+        public ContextExtension extension { get; set; } = new ContextExtension();
     }
 
     public class EIP12UnsignedInput : UnsignedInput
