@@ -170,6 +170,28 @@ namespace FleetSharp
             return boxes?.Select(x => x.box)?.ToList();
         }
 
+        public async Task<List<SignedTransaction>> GetUnconfirmedTransactionsByErgoTree(string ergoTree)
+        {
+            List<SignedTransaction> txes = new List<SignedTransaction>();
+            List<SignedTransaction>? temp = null;
+            int limit = 100;
+
+            if (ergoTree == null) return null;
+
+            do
+            {
+                temp = await client.GetFromJsonAsync<List<SignedTransaction>>($"{this.nodeURL}/blockchain/box/unspent/byErgoTree/{ergoTree}?offset={txes.Count}&limit={limit}");
+
+                if (temp != null)
+                {
+                    txes.AddRange(temp);
+                }
+            }
+            while (temp != null && temp?.Count == limit);
+
+            return txes;
+        }
+
         public async Task<TokenDetail<long>?> GetToken(string? tokenId)
         {
             TokenDetail<long>? token = null;
