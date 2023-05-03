@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Numerics;
@@ -182,11 +183,18 @@ namespace FleetSharp
 
             do
             {
-                temp = await client.GetFromJsonAsync<List<SignedTransaction>>($"{this.nodeURL}/transactions/unconfirmed/byErgoTree/{ergoTree}?offset={txes.Count}&limit={chunkSize}");
+                temp = null;
 
-                if (temp != null)
+                var response = await client.PostAsJsonAsync($"{this.nodeURL}/transactions/unconfirmed/byErgoTree?offset={txes.Count}&limit={chunkSize}", ergoTree, new JsonSerializerOptions { DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull });
+                var content = await response.Content.ReadAsStringAsync();
+                if (content != null)
                 {
-                    txes.AddRange(temp);
+                    temp = JsonSerializer.Deserialize<List<SignedTransaction>>(content);
+
+                    if (temp != null)
+                    {
+                        txes.AddRange(temp);
+                    }
                 }
             }
             while (temp != null && temp?.Count == chunkSize && temp?.Count < limit);
