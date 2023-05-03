@@ -156,36 +156,6 @@ namespace FleetSharp
             return boxes;
         }
 
-        public async Task<List<Box<long>>> GetUnspentBoxesByErgoTree(string ergoTree)
-        {
-            List<Box<long>> boxes = new List<Box<long>>();
-            List<Box<long>>? temp = null;
-            int limit = 1000;
-
-            if (ergoTree == null) return null;
-
-            do
-            {
-                //temp = await client.GetFromJsonAsync<List<NodeBox>>($"{this.nodeURL}/blockchain/box/unspent/byErgoTree/{ergoTree}?offset={boxes.Count}&limit={limit}", jsonOptions);
-                temp = null;
-                //var response = await client.PostAsJsonAsync($"{this.nodeURL}/blockchain/box/unspent/byErgoTree?offset={boxes.Count}&limit={limit}", ergoTree);
-                var response = await client.PostAsync($"{this.nodeURL}/blockchain/box/unspent/byErgoTree?offset={boxes.Count}&limit={limit}", new StringContent(ergoTree, Encoding.UTF8, "application/json"));
-                var content = await response.Content.ReadAsStringAsync();
-                if (content != null && content != "")
-                {
-                    temp = JsonSerializer.Deserialize<List<Box<long>>>(content);
-
-                    if (temp != null)
-                    {
-                        boxes.AddRange(temp);
-                    }
-                }
-            }
-            while (temp != null && temp?.Count == limit);
-
-            return boxes;
-        }
-
         public async Task<List<Box<long>>?> GetAllUnspentBoxesInWallet(bool considerMempool = true)
         {
             var boxes = await client.GetFromJsonAsync<List<WalletBoxesUnspent>>($"{this.nodeURL}/wallet/boxes/unspent?minConfirmations={(considerMempool ? "-1" : "0")}");
