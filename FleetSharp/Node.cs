@@ -170,24 +170,26 @@ namespace FleetSharp
             return boxes?.Select(x => x.box)?.ToList();
         }
 
-        public async Task<List<SignedTransaction>> GetUnconfirmedTransactionsByErgoTree(string ergoTree)
+        public async Task<List<SignedTransaction>> GetUnconfirmedTransactionsByErgoTree(string ergoTree, int limit = -1)
         {
             List<SignedTransaction> txes = new List<SignedTransaction>();
             List<SignedTransaction>? temp = null;
-            int limit = 100;
+            var chunkSize = 100;
+
+            if (limit != -1) chunkSize = Math.Min(chunkSize, limit);
 
             if (ergoTree == null) return null;
 
             do
             {
-                temp = await client.GetFromJsonAsync<List<SignedTransaction>>($"{this.nodeURL}/blockchain/box/unspent/byErgoTree/{ergoTree}?offset={txes.Count}&limit={limit}");
+                temp = await client.GetFromJsonAsync<List<SignedTransaction>>($"{this.nodeURL}/transactions/unconfirmed/byErgoTree/{ergoTree}?offset={txes.Count}&limit={chunkSize}");
 
                 if (temp != null)
                 {
                     txes.AddRange(temp);
                 }
             }
-            while (temp != null && temp?.Count == limit);
+            while (temp != null && temp?.Count == chunkSize && temp?.Count < limit);
 
             return txes;
         }
