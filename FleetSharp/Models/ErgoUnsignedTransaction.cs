@@ -62,7 +62,7 @@ namespace FleetSharp.Models
                 return new EIP12UnsignedTransaction
                 {
                     inputs = inputs().Select(x => (EIP12UnsignedInput)x.toUnsignedInputObject(BuildOutputType.EIP12)).ToList(),
-                    dataInputs = dataInputs().Select(x => (EIP12UnsignedDataInput)x.toUnsignedInputObject(BuildOutputType.EIP12)).ToList(),
+                    dataInputs = dataInputs().Select(x => (EIP12UnsignedDataInput)x.toPlainObject(BuildOutputType.EIP12)).ToList(),
                     outputs = outputs()
                 };
             }
@@ -71,7 +71,7 @@ namespace FleetSharp.Models
                 return new UnsignedTransaction
                 {
                     inputs = inputs().Select(x => (UnsignedInput)x.toUnsignedInputObject(outputType ?? BuildOutputType.Default)).ToList(),
-                    dataInputs = dataInputs().Select(x => (DataInput)x.toUnsignedInputObject(outputType ?? BuildOutputType.Default)).ToList(),
+                    dataInputs = dataInputs().Select(x => (DataInput)x.toPlainObject(outputType ?? BuildOutputType.Default)).ToList(),
                     outputs = outputs()
                 };
             }
