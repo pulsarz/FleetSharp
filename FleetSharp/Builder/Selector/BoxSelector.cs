@@ -8,6 +8,7 @@ using System.Linq;
 using System.Numerics;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace FleetSharp.Builder.Selector
@@ -111,9 +112,14 @@ namespace FleetSharp.Builder.Selector
             }
 
             var unreached = _getUnreachedTargets(selected, target);
-            if (unreached.nanoErgs > 0 || unreached.tokens?.Any() == true)
+            if (unreached.nanoErgs > 0)
             {
-                throw new Exception("InsufficientInputs");
+                throw new Exception($"InsufficientInputs nanoErgs {unreached.nanoErgs}");
+            }
+
+            if (unreached.tokens?.Any() == true)
+            {
+                throw new Exception($"InsufficientInputs tokens={JsonSerializer.Serialize(unreached.tokens)}");
             }
 
             return selected;
