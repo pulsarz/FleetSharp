@@ -116,7 +116,7 @@ namespace FleetSharp.Builder
         //Boxes added through this method will always be included in the input selection
         public TransactionBuilder fromForcedInclusion(List<ErgoUnsignedInput> inputs)
         {
-            from(inputs);
+            from(inputs.Where(x => !_inputs.Exists(y => y.boxId == x.boxId)).ToList());//Only insert if not inserted already
             _inputsForcedInclusionBoxIds.AddRange(inputs.Select(x => x.boxId));
 
             return this;
@@ -124,7 +124,7 @@ namespace FleetSharp.Builder
 
         public TransactionBuilder fromForcedInclusion(List<Box<long>> inputs)
         {
-            from(inputs);
+            from(inputs.Where(x => !_inputs.Exists(y => y.boxId == x.boxId)).ToList());//Only insert if not inserted already
             _inputsForcedInclusionBoxIds.AddRange(inputs.Select(x => x.boxId));
 
             return this;
