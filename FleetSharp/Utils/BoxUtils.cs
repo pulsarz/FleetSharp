@@ -20,7 +20,7 @@ namespace FleetSharp.Utils
         public List<TokenAmount<long>> tokens { get; set; }
     }
 
-    internal static class BoxUtils
+    public static class BoxUtils
     {
         private const string NANOERGS_TOKEN_ID = "nanoErgs";
 
