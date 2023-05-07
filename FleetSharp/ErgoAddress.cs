@@ -118,7 +118,10 @@ namespace FleetSharp
         {
             var bytes = SimpleBase.Base58.Bitcoin.Decode(encodedAddress);
 
-            //todo: validate
+            if (!skipCheck && !validateBytes(bytes))
+            {
+                throw new Exception("Invalid address!");
+            }
 
             var network = _getEncodedNetworkType(bytes);
             var type = _getEncodedAddressType(bytes);
