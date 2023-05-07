@@ -36,8 +36,8 @@ namespace FleetSharp
         {
             if (addressBytes.Length < CHECKSUM_LENGTH) return false;
 
-            var script = addressBytes.Skip(0).Take(addressBytes.Length - CHECKSUM_LENGTH).ToArray();
-            var checksum = addressBytes.Skip(addressBytes.Length - CHECKSUM_LENGTH).Take(CHECKSUM_LENGTH).ToArray();
+            var script = addressBytes.Take(addressBytes.Length - CHECKSUM_LENGTH).ToArray();
+            var checksum = addressBytes.Skip(addressBytes.Length - CHECKSUM_LENGTH).ToArray();
             var blakeHash = Blake2b.ComputeHash(32, script);
             var calculatedChecksum = blakeHash.Take(CHECKSUM_LENGTH).ToArray();
 
@@ -49,7 +49,7 @@ namespace FleetSharp
                 if (!_validateCompressedEcPoint(pk)) return false;
             }
 
-            return (calculatedChecksum == checksum);
+            return (calculatedChecksum.SequenceEqual(checksum));
         }
 
         public static bool validateBase58(string address)
