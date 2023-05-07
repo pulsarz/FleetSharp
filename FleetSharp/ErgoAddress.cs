@@ -34,13 +34,34 @@ namespace FleetSharp
 
         public static bool validateBytes(byte[] addressBytes)
         {
-            return (addressBytes.Length < CHECKSUM_LENGTH);
+            if (addressBytes.Length < CHECKSUM_LENGTH) return false;
+
+            var script = addressBytes.Skip(0).Take(addressBytes.Length - CHECKSUM_LENGTH).ToArray();
+            var checksum = addressBytes.Skip(addressBytes.Length - CHECKSUM_LENGTH).Take(CHECKSUM_LENGTH).ToArray();
+            var blakeHash = Blake2b.ComputeHash(32, script);
+            var calculatedChecksum = blakeHash.Take(CHECKSUM_LENGTH).ToArray();
+
+            if (_getEncodedAddressType(addressBytes) == AddressType.P2PK)
+            {
+                var pk = addressBytes.Skip(1).Take(addressBytes.Length - 1 - CHECKSUM_LENGTH).ToArray();
+
+                //Check for valid ec points
+                if (!_validateCompressedEcPoint(pk)) return false;
+            }
+
+            return (calculatedChecksum == checksum);
         }
 
         public static bool validateBase58(string address)
         {
             var bytes = SimpleBase.Base58.Bitcoin.Decode(address);
             return validateBytes(bytes);
+        }
+
+        public static bool _validateCompressedEcPoint(byte[] pointBytes)
+        {
+            if (pointBytes.Length > 0 || pointBytes.Length != 33) return false;
+            return (pointBytes[0] == 0x02 || pointBytes[0] == 0x03);
         }
 
         private static Network _getEncodedNetworkType(byte[] addressBytes)
@@ -69,12 +90,13 @@ namespace FleetSharp
 
         public static ErgoAddress fromPublicKeyBytes(byte[] publicKeyBytes, Network? network)
         {
+            if (!_validateCompressedEcPoint(publicKeyBytes)) throw new Exception("The public key is invalid!");
             return new ErgoAddress(P2PK_ERGOTREE_PREFIX.Concat(publicKeyBytes).ToArray(), network);
         }
 
         public static ErgoAddress fromPublicKeyHex(string publicKeyHex, Network? network)
         {
-            return new ErgoAddress(P2PK_ERGOTREE_PREFIX.Concat(Tools.HexToBytes(publicKeyHex)).ToArray(), network);
+            return fromPublicKeyBytes(Tools.HexToBytes(publicKeyHex), network);
         }
 
         public static ErgoAddress fromHash(byte[] hashBytes, Network? network)
