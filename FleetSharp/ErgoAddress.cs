@@ -60,7 +60,7 @@ namespace FleetSharp
 
         public static bool _validateCompressedEcPoint(byte[] pointBytes)
         {
-            if (pointBytes.Length > 0 || pointBytes.Length != 33) return false;
+            if (pointBytes.Length == 0 || pointBytes.Length != 33) return false;
             return (pointBytes[0] == 0x02 || pointBytes[0] == 0x03);
         }
 
