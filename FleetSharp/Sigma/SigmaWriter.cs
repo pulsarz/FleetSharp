@@ -6,7 +6,7 @@ using System.Text;
 
 namespace FleetSharp.Sigma
 {
-    internal class SigmaWriter
+    public class SigmaWriter
     {
         //Stolen from https://github.com/fleet-sdk/fleet/blob/master/packages/core/src/serializer/sigma/sigmaWriter.ts
         private byte[] _bytes;

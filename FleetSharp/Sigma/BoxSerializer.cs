@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace FleetSharp.Sigma
 {
-    internal class BoxSerializer
+    public class BoxSerializer
     {
         public static int MAX_UINT16_VALUE = 65535;
         private static int BLAKE_256_HASH_LENGTH = 32;

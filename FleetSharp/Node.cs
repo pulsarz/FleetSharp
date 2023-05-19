@@ -249,10 +249,21 @@ namespace FleetSharp
             return address.address;
         }*/
 
+        public async Task<List<string>?> GetBlockIdsAtHeight(int blockHeight)
+        {
+            return await client.GetFromJsonAsync<List<string>>($"{this.nodeURL}/blocks/at/{blockHeight}");
+        }
+
+        public async Task<Block?> GetFullBlockById(string headerId)
+        {
+            return await client.GetFromJsonAsync<Block>($"{this.nodeURL}/blocks/{headerId}");
+        }
+
         public async Task<NodeIndexedHeight?> GetIndexedHeight()
         {
             return await client.GetFromJsonAsync<NodeIndexedHeight>($"{this.nodeURL}/blockchain/indexedHeight");
         }
+
 
         public async Task<NodeInfo?> GetInfo()
         {
