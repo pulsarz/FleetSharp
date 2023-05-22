@@ -151,4 +151,9 @@ namespace FleetSharp.Types
         public string? spendingTransaction { get; set; }
         public Box<long>? box { get; set; }
     }
+
+    public class NodeWalletUnlock
+    {
+        public string pass { get; set; }
+    }
 }

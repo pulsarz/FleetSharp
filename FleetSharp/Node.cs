@@ -270,6 +270,12 @@ namespace FleetSharp
             return await client.GetFromJsonAsync<NodeInfo>($"{this.nodeURL}/info");
         }
 
+        public async Task<bool> UnlockWallet(string password)
+        {
+            var response = await client.PostAsJsonAsync($"{this.nodeURL}/wallet/unlock", JsonSerializer.Serialize(new NodeWalletUnlock { pass = password }));
+            return response.IsSuccessStatusCode;
+        }
+
         public async Task<long> GetCurrentHeight()
         {
             var info = await GetInfo();
