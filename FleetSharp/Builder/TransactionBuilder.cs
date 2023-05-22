@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -84,16 +85,24 @@ namespace FleetSharp.Builder
             return _creationHeight;
         }
 
-         /**
-        * Syntax sugar to be used in composition with another methods
-        *
-        * @example
-        * ```
-        * new TransactionBuilder(height)
-        *   .from(inputs)
-        *   .and().from(otherInputs);
-        * ```
-        */
+        /**
+       * Syntax sugar to be used in composition with another methods
+       *
+       * @example
+       * ```
+       * new TransactionBuilder(height)
+       *   .from(inputs)
+       *   .and().from(otherInputs);
+       * ```
+       */
+
+        //Removed all inputs except those specified in the forced inclusion
+        public TransactionBuilder clearInputsExclForced()
+        {
+            _inputs = _inputs.Where(x => _inputsForcedInclusionBoxIds.Exists(y => y == x.boxId)).ToList();
+
+            return this;
+        }
         public TransactionBuilder and()
         {
             return this;

@@ -61,12 +61,22 @@ namespace FleetSharp
             return mempool;
         }
 
-        public async Task<NodeMempoolTransaction?> GetTX(string? txId)
+        public async Task<NodeTransaction?> GetTX(string? txId)
+        {
+            NodeTransaction? tx = null;
+            if (txId == null) return null;
+
+            tx = await client.GetFromJsonAsync<NodeTransaction>($"{this.nodeURL}/blockchain/transaction/byId/{txId}");
+
+            return tx;
+        }
+
+        public async Task<NodeMempoolTransaction?> GetTXFromMempool(string? txId)
         {
             NodeMempoolTransaction? tx = null;
             if (txId == null) return null;
 
-            tx = await client.GetFromJsonAsync<NodeMempoolTransaction>($"{this.nodeURL}/blockchain/transaction/byId/{txId}");
+            tx = await client.GetFromJsonAsync<NodeMempoolTransaction>($"{this.nodeURL}/transactions/unconfirmed/byTransactionId/{txId}");
 
             return tx;
         }
@@ -272,7 +282,7 @@ namespace FleetSharp
 
         public async Task<bool> UnlockWallet(string password)
         {
-            var response = await client.PostAsJsonAsync($"{this.nodeURL}/wallet/unlock", JsonSerializer.Serialize(new NodeWalletUnlock { pass = password }));
+            var response = await client.PostAsJsonAsync($"{this.nodeURL}/wallet/unlock", new NodeWalletUnlock { pass = password }, new JsonSerializerOptions { DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull });
             return response.IsSuccessStatusCode;
         }
 

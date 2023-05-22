@@ -115,7 +115,7 @@ namespace FleetSharp.Sigma
 
         public static uint estimateBoxSize(dynamic box, long? withValue = null)
         {
-            if (box.creationHeight == null || box.creationHeight <= 0) throw new Exception("\"Box size estimation error: creation height is undefined.");
+            if (box.creationHeight == null) throw new Exception("\"Box size estimation error: creation height is undefined.");
 
             uint size = 0;
 

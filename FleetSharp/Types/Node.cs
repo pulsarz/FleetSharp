@@ -38,6 +38,21 @@ namespace FleetSharp.Types
         public string? transactionId { get; set; }
         public int index { get; set; }
     }*/
+    public class NodeTransaction
+    {
+        public string? id { get; set; }
+        public string blockId { get; set; }
+        public int inclusionHeight { get; set; }
+        public long timestamp { get; set; }
+        public int index { get; set; }
+        public long globalIndex { get; set; }
+        public int numConfirmations { get; set; }
+        public List<SignedInput>? inputs { get; set; }
+        public List<DataInput>? dataInputs { get; set; }
+        public List<Box<long>>? outputs { get; set; }
+        
+        public int size { get; set; }
+    }
     public class NodeMempoolTransaction
     {
         public string? id { get; set; }
