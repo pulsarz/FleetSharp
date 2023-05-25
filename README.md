@@ -1,7 +1,7 @@
 
 # FleetSharp
 
-FleetSharp is a C# library for building transactions, inspired by the excellent TypeScript fleet-sdk.
+FleetSharp is a C# library for building transactions on the Ergo blockchain, inspired by the excellent TypeScript fleet-sdk.
 
 
 ## Usage
