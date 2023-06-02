@@ -32,6 +32,11 @@ namespace FleetSharp
             _type = _getErgoTreeType(ergoTree);
         }
 
+        public Network? GetNetworkType()
+        {
+            return _network;
+		}
+
         public static bool validateBytes(byte[] addressBytes)
         {
             if (addressBytes.Length < CHECKSUM_LENGTH) return false;

@@ -19,7 +19,7 @@ namespace FleetSharp.Types
 
     public class BoxCandidate<AmountType> : BoxBaseType<AmountType>
     {
-        public string? boxId { get; set; }
+        //public string? boxId { get; set; }
     }
 
     public class Box<AmountType> : BoxBaseType<AmountType>
@@ -28,4 +28,12 @@ namespace FleetSharp.Types
         public string transactionId { get; set; }
         public int index { get; set; }
     }
+
+	public class IncludedBox<AmountType> : Box<AmountType>
+	{
+		public long globalIndex { get; set; }
+		public int inclusionHeight { get; set; }
+		public string address { get; set; }
+		public string spentTransactionId { get; set; }
+	}
 }

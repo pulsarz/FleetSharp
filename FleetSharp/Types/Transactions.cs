@@ -18,10 +18,10 @@ namespace FleetSharp.Types
 
     public class EIP12UnsignedTransaction
     {
-        public string id { get; set; }
+        //public string id { get; set; }
         public List<EIP12UnsignedInput> inputs { get; set; }
         public List<EIP12UnsignedDataInput> dataInputs { get; set; }
-        public List<BoxCandidate<long>> outputs { get; set; }
+        public List<BoxCandidate<string>> outputs { get; set; }
     }
 
     public class SignedTransaction

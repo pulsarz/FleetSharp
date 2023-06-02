@@ -28,7 +28,7 @@ namespace FleetSharp.Types
         public string ergoTree { get; set; }
         public long creationHeight { get; set; }
         public string value { get; set; }
-        public List<TokenAmount<long>> assets { get; set; }
+        public List<TokenAmount<string>> assets { get; set; }
         public NonMandatoryRegisters additionalRegisters { get; set; }
     }
 
@@ -40,7 +40,7 @@ namespace FleetSharp.Types
         public string ergoTree { get; set; }
         public long creationHeight { get; set; }
         public string value { get; set; }
-        public List<TokenAmount<long>> assets { get; set; }
+        public List<TokenAmount<string>> assets { get; set; }
         public NonMandatoryRegisters additionalRegisters { get; set; }
     }
 

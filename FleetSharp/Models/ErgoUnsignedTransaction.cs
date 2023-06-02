@@ -63,8 +63,15 @@ namespace FleetSharp.Models
                 {
                     inputs = inputs().Select(x => (EIP12UnsignedInput)x.toUnsignedInputObject(BuildOutputType.EIP12)).ToList(),
                     dataInputs = dataInputs().Select(x => (EIP12UnsignedDataInput)x.toPlainObject(BuildOutputType.EIP12)).ToList(),
-                    outputs = outputs()
-                };
+                    outputs = outputs().Select(x => new BoxCandidate<string>
+					{
+						additionalRegisters = x.additionalRegisters,
+						creationHeight = x.creationHeight,
+						ergoTree = x.ergoTree,
+						value = x.value.ToString(),
+						assets = x.assets.Select(y => new TokenAmount<string> { tokenId = y.tokenId, amount = y.amount.ToString() }).ToList()
+					}).ToList()
+			};
             }
             else
             {
@@ -89,18 +96,6 @@ namespace FleetSharp.Models
                 dataInputs = dataInputs().Select(dataInput => (DataInput)dataInput.toPlainObject(BuildOutputType.Default)).ToList(),
                 outputs = outputs()
             }).toBytes();
-        }
-
-        private BoxCandidate<long> _stringifyBoxAmounts(BoxCandidate<long> output)
-        {
-            return new BoxCandidate<long>
-            {
-                ergoTree = output.ergoTree,
-                creationHeight = output.creationHeight,
-                value = output.value,
-                assets = output.assets.Select(x => new TokenAmount<long> { tokenId = x.tokenId, amount = x.amount }).ToList(),
-                additionalRegisters = output.additionalRegisters
-            };
         }
     }
 }

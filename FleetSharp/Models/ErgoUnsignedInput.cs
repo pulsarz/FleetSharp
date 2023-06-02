@@ -52,7 +52,7 @@ namespace FleetSharp.Models
                     value = value.ToString(),
                     ergoTree = ergoTree,
                     creationHeight = creationHeight,
-                    assets = assets,
+                    assets = assets.Select(x => new TokenAmount<string> { tokenId = x.tokenId, amount = x.amount.ToString() }).ToList(),
                     additionalRegisters = additionalRegisters,
                     transactionId = transactionId,
                     index = index
@@ -78,8 +78,8 @@ namespace FleetSharp.Models
                     value = value.ToString(),
                     ergoTree = ergoTree,
                     creationHeight = creationHeight,
-                    assets = assets,
-                    additionalRegisters = additionalRegisters,
+					assets = assets.Select(x => new TokenAmount<string> { tokenId = x.tokenId, amount = x.amount.ToString() }).ToList(),
+					additionalRegisters = additionalRegisters,
                     transactionId = transactionId,
                     index = index
                 };

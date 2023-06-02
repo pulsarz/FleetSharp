@@ -81,6 +81,30 @@ namespace FleetSharp
             return tx;
         }
 
+		public async Task<List<NodeFullTransaction>?> GetTransactionsByAddress(string address, int offset = 0, int limit = 100)
+		{
+			var response = await client.PostAsync($"{this.nodeURL}/blockchain/transaction/byAddress?offset={offset}&limit={limit}", new StringContent(address, Encoding.UTF8, "application/json"));
+			var content = await response.Content.ReadAsStringAsync();
+			if (content != null && content != "")
+			{
+				var ret = JsonSerializer.Deserialize<NodeBlockchainTransactionsWrapper>(content);
+                return ret.items;
+			}
+
+            return null;
+		}
+
+        public async Task<List<NodeFullTransaction>?> GetWalletTransactions(int? minInclusionHeight, int? maxInclusionHeight, int? minConfirmationsNum, int? maxConfirmationsNum)
+        {
+            var url = $"{this.nodeURL}/wallet/transactions?";
+            if (minInclusionHeight != null) url += $"minInclusionHeight={minInclusionHeight}&";
+            if (maxInclusionHeight != null) url += $"maxInclusionHeight={maxInclusionHeight}&";
+            if (minConfirmationsNum != null) url += $"minConfirmations={minConfirmationsNum}&";
+            if (maxConfirmationsNum != null) url += $"maxConfirmations={maxConfirmationsNum}&";
+            url = url.Substring(0, url.Length - 1);
+            return await client.GetFromJsonAsync<List<NodeFullTransaction>>(url); ;
+        }
+
         //Tries to find unspent + mempool first, if not found tries spent ones.
         public async Task<Box<long>?> GetBox(string? boxId)
         {
