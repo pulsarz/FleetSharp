@@ -236,6 +236,13 @@ namespace FleetSharp
             return txes;
         }
 
+        public async Task<List<Box<long>>?> GetBoxesFromMempoolByTokenId(string tokenId)
+        {
+            var boxes = await client.GetFromJsonAsync<List<Box<long>>>($"{this.nodeURL}/transactions/unconfirmed/outputs/byTokenId/{tokenId}");
+
+            return boxes;
+        }
+
         public async Task<TokenDetail<long>?> GetToken(string? tokenId)
         {
             TokenDetail<long>? token = null;
