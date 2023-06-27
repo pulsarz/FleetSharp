@@ -64,5 +64,24 @@ namespace FleetSharp
 		{
 			return await _client.GetFromJsonAsync<TokenDetail<long>>($"{_url}/tokens/{tokenId}");
 		}
-	}
+
+        public async Task<NodeBalance<long>?> GetAddressBalance(string address)
+        {
+            return await _client.GetFromJsonAsync<NodeBalance<long>>($"{_url}/addresses/{address}/balance/total");
+        }
+
+        //Will run all addresses parallel!
+        public async Task<List<NodeBalance<long>>> GetAddressesBalances(List<string> addresses)
+        {
+            var taskList = new List<Task<NodeBalance<long>>>();
+
+            foreach (var address in addresses)
+            {
+                taskList.Add(GetAddressBalance(address));
+            }
+
+            var result = await Task.WhenAll(taskList.ToList()).ConfigureAwait(false);
+            return result.ToList();
+        }
+    }
 }
