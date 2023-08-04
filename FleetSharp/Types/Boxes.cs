@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using System.Transactions;
 
@@ -12,6 +13,7 @@ namespace FleetSharp.Types
     {
         public string ergoTree { get; set; }
         public long creationHeight { get; set; }
+        [JsonNumberHandling(JsonNumberHandling.AllowReadingFromString)]
         public AmountType value { get; set; }
         public List<TokenAmount<AmountType>> assets { get; set; }
         public NonMandatoryRegisters additionalRegisters { get; set; }
