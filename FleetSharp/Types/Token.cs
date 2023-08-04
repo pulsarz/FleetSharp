@@ -10,7 +10,6 @@ namespace FleetSharp.Types
 {
     public class TokenBase<AmountType>
     {
-        [JsonNumberHandling(JsonNumberHandling.AllowReadingFromString)]
         public AmountType amount { get; set; }
     }
 
@@ -38,7 +37,6 @@ namespace FleetSharp.Types
     {
         public string? id { get; set; }
         public string? boxId { get; set; }
-        [JsonNumberHandling(JsonNumberHandling.AllowReadingFromString)]
         public AmountType emissionAmount { get; set; }
         public string? name { get; set; }
         public string? description { get; set; }
@@ -48,7 +46,6 @@ namespace FleetSharp.Types
     public class TokenTargetAmount<AmountType>
     {
         public string tokenId { get; set; }
-        [JsonNumberHandling(JsonNumberHandling.AllowReadingFromString)]
         public AmountType? amount { get; set; }
     }
 }

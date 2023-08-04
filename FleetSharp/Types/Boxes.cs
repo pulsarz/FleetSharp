@@ -13,7 +13,6 @@ namespace FleetSharp.Types
     {
         public string ergoTree { get; set; }
         public long creationHeight { get; set; }
-        [JsonNumberHandling(JsonNumberHandling.AllowReadingFromString)]
         public AmountType value { get; set; }
         public List<TokenAmount<AmountType>> assets { get; set; }
         public NonMandatoryRegisters additionalRegisters { get; set; }
