@@ -32,4 +32,13 @@ namespace FleetSharp.Types
         public List<Box<long>> outputs { get; set; }
         public long size { get; set; }
     }
+
+    public class BlockTransaction
+    {
+        public string id { get; set; }
+        public List<SignedInputNoProof> inputs { get; set; }
+        public List<DataInput> dataInputs { get; set; }
+        public List<Box<long>> outputs { get; set; }
+        public long size { get; set; }
+    }
 }

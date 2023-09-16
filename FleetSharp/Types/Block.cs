@@ -46,7 +46,7 @@ namespace FleetSharp.Types
     public class BlockTransactions
     {
         public string headerId { get; set; }
-        public List<SignedTransaction> transactions { get; set; }
+        public List<BlockTransaction> transactions { get; set; }
     }
 
     public class BlockExtension

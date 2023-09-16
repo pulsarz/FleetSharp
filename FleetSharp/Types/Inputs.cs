@@ -15,6 +15,11 @@ namespace FleetSharp.Types
         public ProverResult spendingProof { get; set; }
     }
 
+    public class SignedInputNoProof
+    {
+        public string boxId { get; set; }
+    }
+
     public class UnsignedInput  
     {
         public string boxId { get; set; }
