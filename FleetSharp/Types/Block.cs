@@ -11,7 +11,7 @@ namespace FleetSharp.Types
         public string pk { get; set; }
         public string w { get; set; }
         public string n { get; set; }
-        public string d { get; set; }
+        public double d { get; set; }
     }
 
     public class ADProof
