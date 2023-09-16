@@ -53,7 +53,7 @@ namespace FleetSharp.Types
     {
         public string headerId { get; set; }
         public string digest { get; set; }
-        public Dictionary<string, string> fields { get; set; }
+        public List<List<string>> fields { get; set; }
     }
 
     public class Block
