@@ -190,5 +190,6 @@ namespace FleetSharp.Types
 	public class NodeBlockchainTransactionsWrapper
 	{
 		public List<NodeFullTransaction> items { get; set; }
+        public int total { get; set; }
 	}
 }
