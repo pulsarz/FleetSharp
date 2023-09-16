@@ -300,6 +300,11 @@ namespace FleetSharp
             return await client.GetFromJsonAsync<Block>($"{this.nodeURL}/blocks/{headerId}");
         }
 
+        public async Task<List<BlockHeader>?> GetBlockHeaders(int fromHeight = 0, int toHeight = -1)
+        {
+            return await client.GetFromJsonAsync<List<BlockHeader>>($"{this.nodeURL}/blocks/chainSlice?fromHeight={fromHeight}&toHeight={toHeight}");
+        }
+
         public async Task<NodeIndexedHeight?> GetIndexedHeight()
         {
             return await client.GetFromJsonAsync<NodeIndexedHeight>($"{this.nodeURL}/blockchain/indexedHeight");
