@@ -302,7 +302,7 @@ namespace FleetSharp
 
         public async Task<List<BlockHeader>?> GetBlockHeaders(int fromHeight = 0, int? toHeight = null)
         {
-            var url = $"{this.nodeURL}/blocks/chainSlice?fromHeight={fromHeight}&toHeight={toHeight ?? 9999999999999999}";
+            var url = $"{this.nodeURL}/blocks/chainSlice?fromHeight={fromHeight}&toHeight={toHeight ?? 999999999}";
             return await client.GetFromJsonAsync<List<BlockHeader>>(url);
         }
 
