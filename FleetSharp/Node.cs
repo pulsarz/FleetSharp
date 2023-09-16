@@ -81,14 +81,14 @@ namespace FleetSharp
             return tx;
         }
 
-		public async Task<List<NodeFullTransaction>?> GetTransactionsByAddress(string address, int offset = 0, int limit = 100)
+		public async Task<NodeBlockchainTransactionsWrapper?> GetTransactionsByAddress(string address, int offset = 0, int limit = 100)
 		{
 			var response = await client.PostAsync($"{this.nodeURL}/blockchain/transaction/byAddress?offset={offset}&limit={limit}", new StringContent(address, Encoding.UTF8, "application/json"));
 			var content = await response.Content.ReadAsStringAsync();
 			if (content != null && content != "")
 			{
 				var ret = JsonSerializer.Deserialize<NodeBlockchainTransactionsWrapper>(content);
-                return ret.items;
+                return ret;
 			}
 
             return null;
