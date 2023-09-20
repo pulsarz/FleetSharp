@@ -204,26 +204,24 @@ namespace FleetSharp
 
             return boxes?.Select(x => x.box)?.ToList();
         }
-
-        public async Task<List<SignedTransaction>> GetUnconfirmedTransactionsByErgoTree(string ergoTree, int limit = -1)
+        public async Task<List<NodeMempoolTransaction>> GetUnconfirmedTransactionsByErgoTree(string ergoTree, int offset = 0, int limit = 9999999)
         {
-            List<SignedTransaction> txes = new List<SignedTransaction>();
-            List<SignedTransaction>? temp = null;
-            var chunkSize = 100;
-
-            if (limit != -1) chunkSize = Math.Min(chunkSize, limit);
+            List<NodeMempoolTransaction> txes = new List<NodeMempoolTransaction>();
+            List<NodeMempoolTransaction>? temp = null;
+            int chunkSize = 100;
 
             if (ergoTree == null) return null;
 
             do
             {
                 temp = null;
+                chunkSize = Math.Min(100, limit);
 
-                var response = await client.PostAsJsonAsync($"{this.nodeURL}/transactions/unconfirmed/byErgoTree?offset={txes.Count}&limit={chunkSize}", ergoTree, new JsonSerializerOptions { DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull });
+                var response = await client.PostAsJsonAsync($"{this.nodeURL}/transactions/unconfirmed/byErgoTree?offset={txes.Count + offset}&limit={chunkSize}", ergoTree, new JsonSerializerOptions { DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull });
                 var content = await response.Content.ReadAsStringAsync();
                 if (content != null)
                 {
-                    temp = JsonSerializer.Deserialize<List<SignedTransaction>>(content);
+                    temp = JsonSerializer.Deserialize<List<NodeMempoolTransaction>>(content);
 
                     if (temp != null)
                     {
