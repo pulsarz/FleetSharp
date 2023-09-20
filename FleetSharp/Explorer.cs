@@ -77,7 +77,19 @@ namespace FleetSharp
 
             foreach (var address in addresses)
             {
-                taskList.Add(GetAddressBalance(address));
+                var task = Task.Run(async () =>
+                {
+                    try
+                    {
+                        return await GetAddressBalance(address).ConfigureAwait(false);
+                    }
+                    catch (Exception ex)
+                    {
+                        return null;
+                    }
+                });
+
+                taskList.Add(task);
             }
 
             var result = await Task.WhenAll(taskList.ToList()).ConfigureAwait(false);

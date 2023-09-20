@@ -134,7 +134,19 @@ namespace FleetSharp
 
             foreach (var boxId in boxIds)
             {
-                taskList.Add(GetBox(boxId));
+                var task = Task.Run(async () =>
+                {
+                    try
+                    {
+                        return await GetBox(boxId).ConfigureAwait(false);
+                    }
+                    catch (Exception ex)
+                    {
+                        return null;
+                    }
+                });
+
+                taskList.Add(task);
             }
 
             var result = await Task.WhenAll(taskList.ToList()).ConfigureAwait(false);
@@ -179,7 +191,19 @@ namespace FleetSharp
 
             foreach (var ergoTree in ergoTrees)
             {
-                taskList.Add(GetUnspentBoxesByErgoTree(ergoTree));
+                var task = Task.Run(async () =>
+                {
+                    try
+                    {
+                        return await GetUnspentBoxesByErgoTree(ergoTree).ConfigureAwait(false);
+                    }
+                    catch (Exception ex)
+                    {
+                        return null;
+                    }
+                });
+
+                taskList.Add(task);
             }
 
             var result = await Task.WhenAll(taskList.ToList()).ConfigureAwait(false);
@@ -204,6 +228,7 @@ namespace FleetSharp
 
             return boxes?.Select(x => x.box)?.ToList();
         }
+
         public async Task<List<NodeMempoolTransaction>> GetUnconfirmedTransactionsByErgoTree(string ergoTree, int offset = 0, int limit = 9999999)
         {
             List<NodeMempoolTransaction> txes = new List<NodeMempoolTransaction>();
@@ -274,7 +299,19 @@ namespace FleetSharp
 
             foreach (var address in addresses)
             {
-                taskList.Add(GetAddressBalance(address));
+                var task = Task.Run(async () =>
+                {
+                    try
+                    {
+                        return await GetAddressBalance(address).ConfigureAwait(false);
+                    }
+                    catch (Exception ex)
+                    {
+                        return null;
+                    }
+                });
+
+                taskList.Add(task);
             }
 
             var result = await Task.WhenAll(taskList.ToList()).ConfigureAwait(false);
