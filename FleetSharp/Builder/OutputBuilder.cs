@@ -91,14 +91,25 @@ namespace FleetSharp.Builder
 
         public OutputBuilder AddToken(TokenAmount<long> token)
         {
-            _assets.Add(token);
-
+            var existingAsset = _assets.FirstOrDefault(x => x.tokenId == token.tokenId);
+            if (existingAsset != null && !string.IsNullOrEmpty(existingAsset.tokenId))
+            {
+                existingAsset.amount += token.amount;
+            }
+            else
+            {
+                _assets.Add(token);
+            }
+            
             return this;
         }
 
         public OutputBuilder AddTokens(List<TokenAmount<long>> tokens)
         {
-            _assets.AddRange(tokens);
+            foreach (var token in tokens)
+            {
+                AddToken(token);
+            }
 
             return this;
         }
