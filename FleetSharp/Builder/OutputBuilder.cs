@@ -11,6 +11,7 @@ using System.Linq;
 using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
+using FleetSharp.Exceptions;
 
 namespace FleetSharp.Builder
 {
@@ -89,10 +90,10 @@ namespace FleetSharp.Builder
             return this;
         }
 
-        public OutputBuilder AddToken(TokenAmount<long> token)
+        public OutputBuilder AddToken(TokenAmount<long> token, bool sum = true)
         {
             var existingAsset = _assets.FirstOrDefault(x => x.tokenId == token.tokenId);
-            if (existingAsset != null && !string.IsNullOrEmpty(existingAsset.tokenId))
+            if (sum && existingAsset != null && existingAsset.tokenId != "")
             {
                 existingAsset.amount += token.amount;
             }
@@ -104,11 +105,11 @@ namespace FleetSharp.Builder
             return this;
         }
 
-        public OutputBuilder AddTokens(List<TokenAmount<long>> tokens)
+        public OutputBuilder AddTokens(List<TokenAmount<long>> tokens, bool sum = true)
         {
             foreach (var token in tokens)
             {
-                AddToken(token);
+                AddToken(token, sum);
             }
 
             return this;
@@ -148,7 +149,20 @@ namespace FleetSharp.Builder
 
         public OutputBuilder SetAdditionalRegisters(NonMandatoryRegisters registers)
         {
-            _registers = registers;
+            if ((registers.R9 != null && registers.R8 != null && registers.R7 != null && registers.R6 != null && registers.R5 != null && registers.R4 != null) ||
+                (registers.R9 == null && registers.R8 != null && registers.R7 != null && registers.R6 != null && registers.R5 != null && registers.R4 != null) ||
+                (registers.R9 == null && registers.R8 == null && registers.R7 != null && registers.R6 != null && registers.R5 != null && registers.R4 != null) ||
+                (registers.R9 == null && registers.R8 == null && registers.R7 == null && registers.R6 != null && registers.R5 != null && registers.R4 != null) ||
+                (registers.R9 == null && registers.R8 == null && registers.R7 == null && registers.R6 == null && registers.R5 != null && registers.R4 != null) ||
+                (registers.R9 == null && registers.R8 == null && registers.R7 == null && registers.R6 == null && registers.R5 == null && registers.R4 != null) ||
+                (registers.R9 == null && registers.R8 == null && registers.R7 == null && registers.R6 == null && registers.R5 == null && registers.R4 == null))
+            {
+                _registers = registers;
+            }
+            else
+            {
+                throw new InvalidRegistersPackingException();
+            }
 
             return this;
         }
@@ -159,7 +173,10 @@ namespace FleetSharp.Builder
 
             if (minting() != null)
             {
-                if (transactionInputs == null || transactionInputs.Count == 0) throw new ArgumentException("Undefined minting context!");
+                if (transactionInputs == null || transactionInputs.Count == 0)
+                {
+                    throw new UndefinedMintingContextException();
+                }
 
                 var registers = GetAdditionalRegisters();
                 if (registers == null || (registers.R4 == null && registers.R5 == null && registers.R6 == null && registers.R7 == null && registers.R8 == null && registers.R9 == null))
@@ -180,7 +197,7 @@ namespace FleetSharp.Builder
 
             if (GetCreationHeight() == null)
             {
-                throw new Exception("Undefined creationHeight!");
+                throw new UndefinedCreationHeightException();
             }
 
             return new BoxCandidate<long>

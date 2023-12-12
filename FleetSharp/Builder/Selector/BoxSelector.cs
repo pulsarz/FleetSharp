@@ -1,4 +1,5 @@
 ﻿using FleetSharp.Builder.Selector.Strategies;
+using FleetSharp.Exceptions;
 using FleetSharp.Models;
 using FleetSharp.Types;
 using FleetSharp.Utils;
@@ -108,18 +109,14 @@ namespace FleetSharp.Builder.Selector
             //if (HasDuplicatesBy(selected, item => item.BoxId))
             if (selected.Select(x => x.boxId).ContainsDuplicates())
             {
-                throw new Exception("DuplicateInputSelection");
+                //throw new Exception("DuplicateInputSelection");
+                throw new DuplicateInputException();
             }
 
             var unreached = _getUnreachedTargets(selected, target);
-            if (unreached.nanoErgs > 0)
+            if (unreached.nanoErgs > 0 || unreached.tokens?.Any() == true)
             {
-                throw new Exception($"InsufficientInputs nanoErgs {unreached.nanoErgs}");
-            }
-
-            if (unreached.tokens?.Any() == true)
-            {
-                throw new Exception($"InsufficientInputs tokens={JsonSerializer.Serialize(unreached.tokens)}");
+                throw new InsufficientInputsException(unreached);
             }
 
             return selected;

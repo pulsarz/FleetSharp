@@ -1,4 +1,5 @@
 ﻿using Blake2Fast;
+using FleetSharp.Exceptions;
 using FleetSharp.Types;
 using SimpleBase;
 using System;
@@ -125,7 +126,7 @@ namespace FleetSharp
 
             if (!skipCheck && !validateBytes(bytes))
             {
-                throw new Exception("Invalid address!");
+                throw new InvalidAddressException(encodedAddress);
             }
 
             var network = _getEncodedNetworkType(bytes);

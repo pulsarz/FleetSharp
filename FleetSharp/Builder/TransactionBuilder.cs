@@ -1,4 +1,5 @@
 ﻿using FleetSharp.Builder.Selector;
+using FleetSharp.Exceptions;
 using FleetSharp.Models;
 using FleetSharp.Sigma;
 using FleetSharp.Types;
@@ -354,12 +355,12 @@ namespace FleetSharp.Builder
             {
                 if (_isMoreThanOneTokenBeingMinted())
                 {
-                    throw new InvalidOperationException("Only one token can be minted per transaction.");
+                    throw new MalformedTransactionException("Only one token can be minted per transaction.");
                 }
 
                 if (_isTheSameTokenBeingMintedOutsideTheMintingBox())
                 {
-                    throw new InvalidOperationException("EIP-4 tokens cannot be minted from outside of the minting box.");
+                    throw new NonStandardizedMintingException("EIP-4 tokens cannot be minted from outside of the minting box.");
                 }
             }
 
@@ -445,7 +446,7 @@ namespace FleetSharp.Builder
                 var temp = new ErgoBox(new Box<long> { boxId = input.boxId, transactionId = input.transactionId, index = input.index, ergoTree = input.ergoTree, creationHeight = input.creationHeight, value = input.value, assets = input.assets, additionalRegisters = input.additionalRegisters });
                 if (!temp.isValid())
                 {
-                    throw new Exception($"Invalid input {input.boxId}");
+                    throw new InvalidInputException(input.boxId);
                 }
             }
 
@@ -457,7 +458,7 @@ namespace FleetSharp.Builder
             var burning = unsignedTransaction.burning();
             if (burning.nanoErgs > 0)
             {
-                throw new Exception("It's not possible to burn ERG!");
+                throw new MalformedTransactionException("It's not possible to burn ERG!");
             }
             if (burning.tokens.Any() && _burning.Any())
             {
@@ -466,7 +467,7 @@ namespace FleetSharp.Builder
 
             if (!settings().canBurnTokens() && burning.tokens.Any())
             {
-                throw new Exception("Token burning not allowed!");
+                throw new NotAllowedTokenBurningException();
             }
 
             return unsignedTransaction;

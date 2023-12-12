@@ -8,7 +8,7 @@ namespace FleetSharp.Builder
 {
     public class TransactionBuilderSettings
     {
-        private static int MAX_TOKENS_PER_BOX = 120;
+        public static int MAX_TOKENS_PER_BOX = 120;
 
         private int _maxDistinctTokensPerChangeBox { get; set; }
         private bool _allowTokenBurning { get; set; }
