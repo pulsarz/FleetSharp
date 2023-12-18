@@ -52,13 +52,51 @@ namespace FleetSharp
 			return ConvertExplorerBoxToFleetBox(box);
 		}
 
-		public async Task<List<Box<long>>?> GetUnspentBoxesByTokenId(string tokenId)
-		{
-			var wrapper = await _client.GetFromJsonAsync<ExplorerBoxexWrapper>($"{_url}/boxes/unspent/byTokenId/{tokenId}");
-			if (wrapper == null) return null;
+        public async Task<List<Box<long>>?> GetUnspentBoxesByErgoTree(string ergoTree, int chunkSize=100)
+        {
+			var offset = 0;
+			var limit = chunkSize;
+			var lastCount = 0;
+			var explorerBoxes = new List<ExplorerBox>();
 
-			return wrapper.items.Where(x => x != null).Select(x => ConvertExplorerBoxToFleetBox(x)).ToList();
-		}
+			do
+			{
+				var wrapper = await _client.GetFromJsonAsync<ExplorerBoxesWrapper>($"{_url}/boxes/unspent/byErgoTree/{ergoTree}?offset={offset}&limit={limit}");
+				if (wrapper == null) return null;
+				else
+				{
+					lastCount = wrapper.items.Count;
+					offset += wrapper.items.Count;
+					explorerBoxes.AddRange(wrapper.items);
+				}
+			}
+			while (lastCount == limit);
+
+            return explorerBoxes.Where(x => x != null).Select(x => ConvertExplorerBoxToFleetBox(x)).ToList();
+        }
+
+        public async Task<List<Box<long>>?> GetUnspentBoxesByTokenId(string tokenId, int chunkSize = 100)
+        {
+            var offset = 0;
+            var limit = chunkSize;
+            var lastCount = 0;
+            var explorerBoxes = new List<ExplorerBox>();
+
+            do
+            {
+                var wrapper = await _client.GetFromJsonAsync<ExplorerBoxesWrapper>($"{_url}/boxes/unspent/byTokenId/{tokenId}?offset={offset}&limit={limit}");
+                if (wrapper == null) return null;
+                else
+                {
+                    lastCount = wrapper.items.Count;
+                    offset += wrapper.items.Count;
+                    explorerBoxes.AddRange(wrapper.items);
+                }
+            }
+            while (lastCount == limit);
+
+            return explorerBoxes.Where(x => x != null).Select(x => ConvertExplorerBoxToFleetBox(x)).ToList();
+        }
 
 		public async Task<TokenDetail<long>?> GetTokenById(string tokenId)
 		{

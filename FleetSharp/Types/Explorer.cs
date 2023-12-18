@@ -48,7 +48,7 @@ namespace FleetSharp.Types
 		public bool? mainChain { get; set; }
 	}
 
-	public class ExplorerBoxexWrapper
+	public class ExplorerBoxesWrapper
 	{
 		public List<ExplorerBox> items { get; set; }
 		public int total { get; set; }
