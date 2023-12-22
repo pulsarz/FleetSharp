@@ -215,6 +215,22 @@ namespace FleetSharp
             return boxes;
         }
 
+        //Required node version >= 5.0.15
+        public async Task<List<Box<long>>> GetUnspentBoxesByTokenId(string tokenId, int offset=0, int limit=100, string sortDirection="desc", bool includeUnconfirmed = true)
+        {
+            if (tokenId == null) return null;
+
+            //blockchain/box/unspent/byTokenId/0fdb7ff8b37479b6eb7aab38d45af2cfeefabbefdc7eebc0348d25dd65bc2c91?offset=0&limit=1000&sortDirection=desc&includeUnconfirmed=true
+            var response = await client.GetAsync($"{this.nodeURL}/blockchain/box/unspent/byTokenId/{tokenId}?offset={offset}&limit={limit}&sortDirection={sortDirection}&includeUnconfirmed={(includeUnconfirmed ? "true" : "false")}");
+            var content = await response.Content.ReadAsStringAsync();
+            if (content != null && content != "")
+            {
+                return JsonSerializer.Deserialize<List<Box<long>>>(content);
+            }
+
+            return null;
+        }
+
         public async Task<List<Box<long>>?> GetAllUnspentBoxesInWallet(bool considerMempool = true)
         {
             var boxes = await client.GetFromJsonAsync<List<WalletBoxesUnspent>>($"{this.nodeURL}/wallet/boxes/unspent?minConfirmations={(considerMempool ? "-1" : "0")}");
