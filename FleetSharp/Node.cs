@@ -24,6 +24,8 @@ namespace FleetSharp
         private string nodeURL;
         private string apiKey;
 
+        private JsonSerializerOptions defaultSerializerOptions = new JsonSerializerOptions { DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull };
+
         public NodeInterface(string nodeURL, string? apiKey = null) {
             this.nodeURL = nodeURL;
             this.apiKey = apiKey;
@@ -94,6 +96,19 @@ namespace FleetSharp
             return null;
 		}
 
+        public async Task<NodeBlockchainTransactionsWrapper?> GetTransactionsByIndex(long txIndex, int offset = 0, int limit = 100)
+        {
+            var response = await client.GetAsync($"{this.nodeURL}/blockchain/transaction/byIndex/{txIndex}?offset={offset}&limit={limit}");
+            var content = await response.Content.ReadAsStringAsync();
+            if (content != null && content != "")
+            {
+                var ret = JsonSerializer.Deserialize<NodeBlockchainTransactionsWrapper>(content);
+                return ret;
+            }
+
+            return null;
+        }
+
         public async Task<List<NodeFullTransaction>?> GetWalletTransactions(int? minInclusionHeight, int? maxInclusionHeight, int? minConfirmationsNum, int? maxConfirmationsNum)
         {
             var url = $"{this.nodeURL}/wallet/transactions?";
@@ -119,7 +134,7 @@ namespace FleetSharp
             {
 
             }
-
+            
             if (box == null)
             {
                 //Retrieve box from blockchain indexer instead
@@ -151,6 +166,20 @@ namespace FleetSharp
 
             var result = await Task.WhenAll(taskList.ToList()).ConfigureAwait(false);
             return result.ToList();
+        }
+
+        public async Task<List<Box<long>>> GetBoxesFromUTXOSet(List<string> boxIds)
+        {
+            var boxes = new List<Box<long>>();
+
+            var response = await client.PostAsJsonAsync($"{this.nodeURL}/utxo/withPool/byIds", boxIds, defaultSerializerOptions);
+            var content = await response.Content.ReadAsStringAsync();
+            if (content != null && content != "")
+            {
+                boxes = JsonSerializer.Deserialize<List<Box<long>>>(content);
+            }
+
+            return boxes;
         }
 
         public async Task<List<Box<long>>> GetUnspentBoxesByErgoTree(string ergoTree)
@@ -258,7 +287,7 @@ namespace FleetSharp
                 temp = null;
                 chunkSize = Math.Min(100, limit);
 
-                var response = await client.PostAsJsonAsync($"{this.nodeURL}/transactions/unconfirmed/byErgoTree?offset={txes.Count + offset}&limit={chunkSize}", ergoTree, new JsonSerializerOptions { DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull });
+                var response = await client.PostAsJsonAsync($"{this.nodeURL}/transactions/unconfirmed/byErgoTree?offset={txes.Count + offset}&limit={chunkSize}", ergoTree, defaultSerializerOptions);
                 var content = await response.Content.ReadAsStringAsync();
                 if (content != null)
                 {
@@ -370,7 +399,7 @@ namespace FleetSharp
 
         public async Task<bool> UnlockWallet(string password)
         {
-            var response = await client.PostAsJsonAsync($"{this.nodeURL}/wallet/unlock", new NodeWalletUnlock { pass = password }, new JsonSerializerOptions { DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull });
+            var response = await client.PostAsJsonAsync($"{this.nodeURL}/wallet/unlock", new NodeWalletUnlock { pass = password }, defaultSerializerOptions);
             return response.IsSuccessStatusCode;
         }
 
@@ -397,7 +426,7 @@ namespace FleetSharp
         {
             SignTXWrapper wrapper = new SignTXWrapper() { tx = tx };
 
-            var response = await client.PostAsJsonAsync($"{this.nodeURL}/wallet/transaction/sign", wrapper, new JsonSerializerOptions { DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull });
+            var response = await client.PostAsJsonAsync($"{this.nodeURL}/wallet/transaction/sign", wrapper, defaultSerializerOptions);
             var content = await response.Content.ReadAsStringAsync();
             if (content == null || content == "") return null;
 
@@ -407,7 +436,7 @@ namespace FleetSharp
 
         public async Task<string?> SubmitSignedTransaction(SignedTransaction tx)
         {
-            var response = await client.PostAsJsonAsync($"{this.nodeURL}/transactions", tx, new JsonSerializerOptions { DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull });
+            var response = await client.PostAsJsonAsync($"{this.nodeURL}/transactions", tx, defaultSerializerOptions);
             var content = await response.Content.ReadAsStringAsync();
             if (content == null || content == "") return null;
 
@@ -427,15 +456,6 @@ namespace FleetSharp
         public async Task<NodeMempoolTransaction?> FillMissingInfoMempoolTX(NodeMempoolTransaction? tx)
         {
             if (tx == null) return null;
-            //get input boxes
-            /*for (var i = 0; i < tx.inputs?.Count; i++)
-            {
-                if (tx.inputs[i] != null)
-                {
-                    Box<long>? tempBox = await GetBox(tx.inputs[i]?.boxId);
-                    tx.inputs[i] = tempBox;
-                }
-            }*/
 
             var inputBoxIds = tx.inputs.Select(x => x.boxId).Where(x => x != null).ToList();
             var inputBoxes = await GetBoxes(inputBoxIds);
@@ -445,25 +465,6 @@ namespace FleetSharp
             {
                 if (tempBox != null) tx.inputs.Add(tempBox);
             }
-
-            /*
-            //get input addresses from ergotree
-            for (var i = 0; i < tx.inputs?.Count; i++)
-            {
-                if (tx.inputs[i] != null)
-                {
-                    tx.inputs[i].address = ErgoAddress.fromErgoTree(tx.inputs[i]?.ergoTree, Network.Mainnet).encode(Network.Mainnet);
-                }
-            }
-
-            //get output addresses from ergotree
-            for (var i = 0; i < tx.outputs?.Count; i++)
-            {
-                if (tx.outputs[i] != null)
-                {
-                    tx.outputs[i].address = ErgoAddress.fromErgoTree(tx.outputs[i]?.ergoTree, Network.Mainnet).encode(Network.Mainnet);
-                }
-            }*/
 
             return tx;
         }
