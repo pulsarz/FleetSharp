@@ -458,7 +458,8 @@ namespace FleetSharp
             if (tx == null) return null;
 
             var inputBoxIds = tx.inputs.Select(x => x.boxId).Where(x => x != null).ToList();
-            var inputBoxes = await GetBoxes(inputBoxIds);
+            //var inputBoxes = await GetBoxes(inputBoxIds);
+            var inputBoxes = await GetBoxesFromUTXOSet(inputBoxIds);
 
             tx.inputs = tx.inputs.Where(x => !inputBoxes.Exists(y => y.boxId == x.boxId)).ToList();
             foreach (var tempBox in inputBoxes)
