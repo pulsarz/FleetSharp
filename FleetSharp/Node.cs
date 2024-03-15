@@ -14,6 +14,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace FleetSharp
 {
@@ -26,6 +27,8 @@ namespace FleetSharp
 
         private JsonSerializerOptions defaultSerializerOptions = new JsonSerializerOptions { DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull };
 
+        private HttpResponseMessage lastHttpResponseMessage;
+
         public NodeInterface(string nodeURL, string? apiKey = null) {
             this.nodeURL = nodeURL;
             this.apiKey = apiKey;
@@ -34,10 +37,18 @@ namespace FleetSharp
             if (apiKey != null) client.DefaultRequestHeaders.Add("api_key", apiKey);
         }
 
+        public HttpResponseMessage GetLastHttpResponseMessage()
+        {
+            return lastHttpResponseMessage;
+        }
+
         //take should not be hiogher then 100
         private async Task<List<NodeMempoolTransaction>?> _GetMempool(int offset, int take)
         {
-            List<NodeMempoolTransaction>? mempool = await client.GetFromJsonAsync<List<NodeMempoolTransaction>>($"{this.nodeURL}/transactions/unconfirmed?limit={take}&offset={offset}");
+            var response = await client.GetAsync($"{this.nodeURL}/transactions/unconfirmed?limit={take}&offset={offset}");
+            lastHttpResponseMessage = response;
+
+            List<NodeMempoolTransaction>? mempool = await response.Content.ReadFromJsonAsync<List<NodeMempoolTransaction>>();
             return mempool;
         }
 
@@ -68,7 +79,9 @@ namespace FleetSharp
             NodeTransaction? tx = null;
             if (txId == null) return null;
 
-            tx = await client.GetFromJsonAsync<NodeTransaction>($"{this.nodeURL}/blockchain/transaction/byId/{txId}");
+            var response = await client.GetAsync($"{this.nodeURL}/blockchain/transaction/byId/{txId}");
+            lastHttpResponseMessage = response;
+            tx = await response.Content.ReadFromJsonAsync<NodeTransaction>();
 
             return tx;
         }
@@ -78,7 +91,9 @@ namespace FleetSharp
             NodeMempoolTransaction? tx = null;
             if (txId == null) return null;
 
-            tx = await client.GetFromJsonAsync<NodeMempoolTransaction>($"{this.nodeURL}/transactions/unconfirmed/byTransactionId/{txId}");
+            var response = await client.GetAsync($"{this.nodeURL}/transactions/unconfirmed/byTransactionId/{txId}");
+            lastHttpResponseMessage = response;
+            tx = await response.Content.ReadFromJsonAsync<NodeMempoolTransaction>();
 
             return tx;
         }
@@ -86,7 +101,8 @@ namespace FleetSharp
 		public async Task<NodeBlockchainTransactionsWrapper?> GetTransactionsByAddress(string address, int offset = 0, int limit = 100)
 		{
 			var response = await client.PostAsync($"{this.nodeURL}/blockchain/transaction/byAddress?offset={offset}&limit={limit}", new StringContent(address, Encoding.UTF8, "application/json"));
-			var content = await response.Content.ReadAsStringAsync();
+            lastHttpResponseMessage = response;
+            var content = await response.Content.ReadAsStringAsync();
 			if (content != null && content != "")
 			{
 				var ret = JsonSerializer.Deserialize<NodeBlockchainTransactionsWrapper>(content);
@@ -99,6 +115,7 @@ namespace FleetSharp
         public async Task<NodeBlockchainTransactionsWrapper?> GetTransactionsByIndex(long txIndex, int offset = 0, int limit = 100)
         {
             var response = await client.GetAsync($"{this.nodeURL}/blockchain/transaction/byIndex/{txIndex}?offset={offset}&limit={limit}");
+            lastHttpResponseMessage = response;
             var content = await response.Content.ReadAsStringAsync();
             if (content != null && content != "")
             {
@@ -117,7 +134,10 @@ namespace FleetSharp
             if (minConfirmationsNum != null) url += $"minConfirmations={minConfirmationsNum}&";
             if (maxConfirmationsNum != null) url += $"maxConfirmations={maxConfirmationsNum}&";
             url = url.Substring(0, url.Length - 1);
-            return await client.GetFromJsonAsync<List<NodeFullTransaction>>(url); ;
+
+            var response = await client.GetAsync(url);
+            lastHttpResponseMessage = response;
+            return await response.Content.ReadFromJsonAsync<List<NodeFullTransaction>>();
         }
 
         //Tries to find unspent + mempool first, if not found tries spent ones.
@@ -128,7 +148,9 @@ namespace FleetSharp
 
             try
             {
-                box = await client.GetFromJsonAsync<Box<long>>($"{this.nodeURL}/utxo/withPool/byId/{boxId}");
+                var response = await client.GetAsync($"{this.nodeURL}/utxo/withPool/byId/{boxId}");
+                lastHttpResponseMessage = response;
+                box = await response.Content.ReadFromJsonAsync<Box<long>>();
             }
             catch (Exception e)
             {
@@ -138,7 +160,9 @@ namespace FleetSharp
             if (box == null)
             {
                 //Retrieve box from blockchain indexer instead
-                box = await client.GetFromJsonAsync<Box<long>>($"{this.nodeURL}/blockchain/box/byId/{boxId}");
+                var response = await client.GetAsync($"{this.nodeURL}/blockchain/box/byId/{boxId}");
+                lastHttpResponseMessage = response;
+                box = await response.Content.ReadFromJsonAsync<Box<long>>();
             }
 
             return box;
@@ -173,6 +197,7 @@ namespace FleetSharp
             var boxes = new List<Box<long>>();
 
             var response = await client.PostAsJsonAsync($"{this.nodeURL}/utxo/withPool/byIds", boxIds, defaultSerializerOptions);
+            lastHttpResponseMessage = response;
             var content = await response.Content.ReadAsStringAsync();
             if (content != null && content != "")
             {
@@ -196,6 +221,7 @@ namespace FleetSharp
                 temp = null;
                 //var response = await client.PostAsJsonAsync($"{this.nodeURL}/blockchain/box/unspent/byErgoTree?offset={boxes.Count}&limit={limit}", ergoTree);
                 var response = await client.PostAsync($"{this.nodeURL}/blockchain/box/unspent/byErgoTree?offset={boxes.Count}&limit={limit}", new StringContent(ergoTree, Encoding.UTF8, "application/json"));
+                lastHttpResponseMessage = response;
                 var content = await response.Content.ReadAsStringAsync();
                 if (content != null && content != "")
                 {
@@ -251,6 +277,7 @@ namespace FleetSharp
 
             //blockchain/box/unspent/byTokenId/0fdb7ff8b37479b6eb7aab38d45af2cfeefabbefdc7eebc0348d25dd65bc2c91?offset=0&limit=1000&sortDirection=desc&includeUnconfirmed=true
             var response = await client.GetAsync($"{this.nodeURL}/blockchain/box/unspent/byTokenId/{tokenId}?offset={offset}&limit={limit}&sortDirection={sortDirection}&includeUnconfirmed={(includeUnconfirmed ? "true" : "false")}");
+            lastHttpResponseMessage = response;
             var content = await response.Content.ReadAsStringAsync();
             if (content != null && content != "")
             {
@@ -262,14 +289,18 @@ namespace FleetSharp
 
         public async Task<List<Box<long>>?> GetAllUnspentBoxesInWallet(bool considerMempool = true)
         {
-            var boxes = await client.GetFromJsonAsync<List<WalletBoxesUnspent>>($"{this.nodeURL}/wallet/boxes/unspent?minConfirmations={(considerMempool ? "-1" : "0")}");
+            var response = await client.GetAsync($"{this.nodeURL}/wallet/boxes/unspent?minConfirmations={(considerMempool ? "-1" : "0")}");
+            lastHttpResponseMessage = response;
+            var boxes = await response.Content.ReadFromJsonAsync<List<WalletBoxesUnspent>>();
 
             return boxes?.Select(x => x.box)?.ToList();
         }
 
         public async Task<List<Box<long>>?> GetUnspentBoxesScan(int scanId, bool considerMempool = true)
         {
-            var boxes = await client.GetFromJsonAsync<List<WalletBoxesUnspent>>($"{this.nodeURL}/scan/unspentBoxes/{scanId}?minConfirmations={(considerMempool ? "-1" : "0")}");
+            var response = await client.GetAsync($"{this.nodeURL}/scan/unspentBoxes/{scanId}?minConfirmations={(considerMempool ? "-1" : "0")}");
+            lastHttpResponseMessage = response;
+            var boxes = await response.Content.ReadFromJsonAsync<List<WalletBoxesUnspent>>();
 
             return boxes?.Select(x => x.box)?.ToList();
         }
@@ -288,6 +319,7 @@ namespace FleetSharp
                 chunkSize = Math.Min(100, limit);
 
                 var response = await client.PostAsJsonAsync($"{this.nodeURL}/transactions/unconfirmed/byErgoTree?offset={txes.Count + offset}&limit={chunkSize}", ergoTree, defaultSerializerOptions);
+                lastHttpResponseMessage = response;
                 var content = await response.Content.ReadAsStringAsync();
                 if (content != null)
                 {
@@ -306,7 +338,9 @@ namespace FleetSharp
 
         public async Task<List<Box<long>>?> GetBoxesFromMempoolByTokenId(string tokenId)
         {
-            var boxes = await client.GetFromJsonAsync<List<Box<long>>>($"{this.nodeURL}/transactions/unconfirmed/outputs/byTokenId/{tokenId}");
+            var response = await client.GetAsync($"{this.nodeURL}/transactions/unconfirmed/outputs/byTokenId/{tokenId}");
+            lastHttpResponseMessage = response;
+            var boxes = await response.Content.ReadFromJsonAsync<List<Box<long>>>();
 
             return boxes;
         }
@@ -316,7 +350,9 @@ namespace FleetSharp
             TokenDetail<long>? token = null;
             if (tokenId == null) return null;
 
-            token = await client.GetFromJsonAsync<TokenDetail<long>>($"{this.nodeURL}/blockchain/token/byId/{tokenId}");
+            var response = await client.GetAsync($"{this.nodeURL}/blockchain/token/byId/{tokenId}");
+            lastHttpResponseMessage = response;
+            token = await response.Content.ReadFromJsonAsync<TokenDetail<long>>();
 
             return token;
         }
@@ -328,6 +364,7 @@ namespace FleetSharp
             if (address == null) return null;
 
             var response = await client.PostAsync($"{this.nodeURL}/blockchain/balance", new StringContent(address, Encoding.UTF8, "application/json"));
+            lastHttpResponseMessage = response;
             var content = await response.Content.ReadAsStringAsync();
             if (content != null && content != "")
             {
@@ -372,34 +409,45 @@ namespace FleetSharp
 
         public async Task<List<string>?> GetBlockIdsAtHeight(int blockHeight)
         {
-            return await client.GetFromJsonAsync<List<string>>($"{this.nodeURL}/blocks/at/{blockHeight}");
+            var response = await client.GetAsync($"{this.nodeURL}/blocks/at/{blockHeight}");
+            lastHttpResponseMessage = response;
+            return await response.Content.ReadFromJsonAsync<List<string>>();
         }
 
         public async Task<Block?> GetFullBlockById(string headerId)
         {
-            return await client.GetFromJsonAsync<Block>($"{this.nodeURL}/blocks/{headerId}");
+            var response = await client.GetAsync($"{this.nodeURL}/blocks/{headerId}");
+            lastHttpResponseMessage = response;
+            return await response.Content.ReadFromJsonAsync<Block>();
         }
 
         public async Task<List<BlockHeader>?> GetBlockHeaders(int fromHeight = 0, int? toHeight = null)
         {
             var url = $"{this.nodeURL}/blocks/chainSlice?fromHeight={fromHeight}&toHeight={toHeight ?? 999999999}";
-            return await client.GetFromJsonAsync<List<BlockHeader>>(url);
+            var response = await client.GetAsync(url);
+            lastHttpResponseMessage = response;
+            return await response.Content.ReadFromJsonAsync<List<BlockHeader>>();
         }
 
         public async Task<NodeIndexedHeight?> GetIndexedHeight()
         {
-            return await client.GetFromJsonAsync<NodeIndexedHeight>($"{this.nodeURL}/blockchain/indexedHeight");
+            var response = await client.GetAsync($"{this.nodeURL}/blockchain/indexedHeight");
+            lastHttpResponseMessage = response;
+            return await response.Content.ReadFromJsonAsync<NodeIndexedHeight>();
         }
 
 
         public async Task<NodeInfo?> GetInfo()
         {
-            return await client.GetFromJsonAsync<NodeInfo>($"{this.nodeURL}/info");
+            var response = await client.GetAsync($"{this.nodeURL}/info");
+            lastHttpResponseMessage = response;
+            return await response.Content.ReadFromJsonAsync<NodeInfo>();
         }
 
         public async Task<bool> UnlockWallet(string password)
         {
             var response = await client.PostAsJsonAsync($"{this.nodeURL}/wallet/unlock", new NodeWalletUnlock { pass = password }, defaultSerializerOptions);
+            lastHttpResponseMessage = response;
             return response.IsSuccessStatusCode;
         }
 
@@ -414,6 +462,7 @@ namespace FleetSharp
             if (address == null) return false;
 
             var response = await client.PostAsJsonAsync($"{this.nodeURL}/utils/address", address);
+            lastHttpResponseMessage = response;
             var content = await response.Content.ReadAsStringAsync();
             if (content == null || content == "") return false;
             IsValidAddress? valid = JsonSerializer.Deserialize<IsValidAddress>(content);
@@ -427,6 +476,7 @@ namespace FleetSharp
             SignTXWrapper wrapper = new SignTXWrapper() { tx = tx };
 
             var response = await client.PostAsJsonAsync($"{this.nodeURL}/wallet/transaction/sign", wrapper, defaultSerializerOptions);
+            lastHttpResponseMessage = response;
             var content = await response.Content.ReadAsStringAsync();
             if (content == null || content == "") return null;
 
@@ -437,6 +487,7 @@ namespace FleetSharp
         public async Task<string?> SubmitSignedTransaction(SignedTransaction tx)
         {
             var response = await client.PostAsJsonAsync($"{this.nodeURL}/transactions", tx, defaultSerializerOptions);
+            lastHttpResponseMessage = response;
             var content = await response.Content.ReadAsStringAsync();
             if (content == null || content == "") return null;
 
