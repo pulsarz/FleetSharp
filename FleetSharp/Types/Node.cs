@@ -47,7 +47,7 @@ namespace FleetSharp.Types
         public int index { get; set; }
         public long globalIndex { get; set; }
         public int numConfirmations { get; set; }
-        public List<SignedInput>? inputs { get; set; }
+        public List<Box<long>>? inputs { get; set; }
         public List<DataInput>? dataInputs { get; set; }
         public List<Box<long>>? outputs { get; set; }
         
