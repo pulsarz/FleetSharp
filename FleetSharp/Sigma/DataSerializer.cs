@@ -68,7 +68,6 @@ namespace FleetSharp.Sigma
             throw new InvalidDataException("Parsing error: type not implemented.");
         }
 
-        //COMPLETELY UNTESTED! PROBABLY DOESN'T WORK!!!!
         public static void serialize(dynamic data, SigmaWriter writer)
         {
 

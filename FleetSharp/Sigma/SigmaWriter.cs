@@ -1,4 +1,5 @@
-﻿using System;
+﻿using FleetSharp.Sigma.Interface;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
@@ -6,7 +7,7 @@ using System.Text;
 
 namespace FleetSharp.Sigma
 {
-    public class SigmaWriter
+    public class SigmaWriter : ISigmaWriter
     {
         //Stolen from https://github.com/fleet-sdk/fleet/blob/master/packages/core/src/serializer/sigma/sigmaWriter.ts
         private byte[] _bytes;

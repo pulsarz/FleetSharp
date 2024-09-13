@@ -1,4 +1,5 @@
-﻿using FleetSharp.Types;
+﻿using FleetSharp.Interface;
+using FleetSharp.Types;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -11,15 +12,16 @@ using System.Threading.Tasks;
 
 namespace FleetSharp
 {
-	public class Explorer
+	public class Explorer : IExplorer
 	{
 		private string _url;
-		private HttpClient _client = new HttpClient();
+		private HttpClient _client;
 
 		public Explorer(string url = "https://api.ergoplatform.com/api/v1")
 		{
 			_url = url;
-		}
+            _client = new HttpClient();
+        }
 
 		public Box<long> ConvertExplorerBoxToFleetBox(ExplorerBox box)
 		{

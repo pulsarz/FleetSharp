@@ -12,11 +12,12 @@ using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 using FleetSharp.Exceptions;
+using FleetSharp.Builder.Interface;
 
 namespace FleetSharp.Builder
 {
     //Partially loaned from https://github.com/fleet-sdk/fleet/blob/master/packages/core/src/builder/outputBuilder.ts
-    public class OutputBuilder
+    public class OutputBuilder : IOutputBuilder
     {
         public const long BOX_VALUE_PER_BYTE = 360;
         public const long SAFE_MIN_BOX_VALUE = 1000000;
@@ -29,14 +30,6 @@ namespace FleetSharp.Builder
 
         private NewToken<long>? _minting { get; set; }
 
-
-        public long estimateMinBoxValue(long valuePerByte = BOX_VALUE_PER_BYTE)
-        {
-            long valuePerByteBigInt = valuePerByte;
-            return BoxSerializer.estimateBoxSize(build(), SAFE_MIN_BOX_VALUE) * valuePerByteBigInt;
-        }
-
-
         public OutputBuilder(long value, ErgoAddress recipient, long? creationHeight = null)
         {
             SetValue(value);
@@ -44,6 +37,12 @@ namespace FleetSharp.Builder
             _assets = new List<TokenAmount<long>>();
             _registers = new NonMandatoryRegisters { };
             _address = recipient;
+        }
+
+        public long estimateMinBoxValue(long valuePerByte = BOX_VALUE_PER_BYTE)
+        {
+            long valuePerByteBigInt = valuePerByte;
+            return BoxSerializer.estimateBoxSize(build(), SAFE_MIN_BOX_VALUE) * valuePerByteBigInt;
         }
 
         public long GetValue()
@@ -115,7 +114,6 @@ namespace FleetSharp.Builder
             return this;
         }
 
-        //ToDo: Use tokenIds or the objects here?
         public OutputBuilder RemoveTokens(string tokenId)
         {
             _assets = _assets.Where(x => x.tokenId != tokenId).ToList();

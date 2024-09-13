@@ -1,5 +1,6 @@
 ﻿using Blake2Fast;
 using FleetSharp.Exceptions;
+using FleetSharp.Interface;
 using FleetSharp.Types;
 using SimpleBase;
 using System;
@@ -10,7 +11,7 @@ using System.Text;
 
 namespace FleetSharp
 {
-    public class ErgoAddress
+    public class ErgoAddress : IErgoAddress
     {
         private byte[] _ergoTree;
         private Network? _network;

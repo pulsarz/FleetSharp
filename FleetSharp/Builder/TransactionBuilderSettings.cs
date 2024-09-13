@@ -1,4 +1,5 @@
-﻿using System;
+﻿using FleetSharp.Builder.Interface;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace FleetSharp.Builder
 {
-    public class TransactionBuilderSettings
+    public class TransactionBuilderSettings : ITransactionBuilderSettings
     {
         public static int MAX_TOKENS_PER_BOX = 120;
 

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using FleetSharp.Sigma.Interface;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
@@ -6,7 +7,7 @@ using System.Text;
 
 namespace FleetSharp.Sigma
 {
-    internal class SigmaReader
+    internal class SigmaReader : ISigmaReader
     {
         //Stolen from https://github.com/fleet-sdk/fleet/blob/33159be30de3c28f38b09707c4c36e967530b1ea/packages/core/src/serializer/sigma/sigmaReader.ts
         private byte[] _bytes;
