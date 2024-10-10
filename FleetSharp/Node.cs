@@ -51,7 +51,7 @@ namespace FleetSharp
             var response = await _client.GetAsync($"{_nodeURL}/transactions/unconfirmed?limit={take}&offset={offset}");
             lastHttpResponseMessage = response;
 
-            List<NodeMempoolTransaction>? mempool = await response.Content.ReadFromJsonAsync<List<NodeMempoolTransaction>>();
+            List<NodeMempoolTransaction>? mempool = await response.EnsureSuccessStatusCode().Content.ReadFromJsonAsync<List<NodeMempoolTransaction>>();
             return mempool;
         }
 
@@ -84,7 +84,7 @@ namespace FleetSharp
 
             var response = await _client.GetAsync($"{_nodeURL}/blockchain/transaction/byId/{txId}");
             lastHttpResponseMessage = response;
-            tx = await response.Content.ReadFromJsonAsync<NodeTransaction>();
+            tx = await response.EnsureSuccessStatusCode().Content.ReadFromJsonAsync<NodeTransaction>();
 
             return tx;
         }
@@ -96,7 +96,7 @@ namespace FleetSharp
 
             var response = await _client.GetAsync($"{_nodeURL}/transactions/unconfirmed/byTransactionId/{txId}");
             lastHttpResponseMessage = response;
-            tx = await response.Content.ReadFromJsonAsync<NodeMempoolTransaction>();
+            tx = await response.EnsureSuccessStatusCode().Content.ReadFromJsonAsync<NodeMempoolTransaction>();
 
             return tx;
         }
@@ -105,7 +105,7 @@ namespace FleetSharp
 		{
 			var response = await _client.PostAsync($"{_nodeURL}/blockchain/transaction/byAddress?offset={offset}&limit={limit}", new StringContent(address, Encoding.UTF8, "application/json"));
             lastHttpResponseMessage = response;
-            var content = await response.Content.ReadAsStringAsync();
+            var content = await response.EnsureSuccessStatusCode().Content.ReadAsStringAsync();
 			if (content != null && content != "")
 			{
 				var ret = JsonSerializer.Deserialize<NodeBlockchainTransactionsWrapper>(content);
@@ -119,7 +119,7 @@ namespace FleetSharp
         {
             var response = await _client.GetAsync($"{_nodeURL}/blockchain/transaction/byIndex/{txIndex}?offset={offset}&limit={limit}");
             lastHttpResponseMessage = response;
-            var content = await response.Content.ReadAsStringAsync();
+            var content = await response.EnsureSuccessStatusCode().Content.ReadAsStringAsync();
             if (content != null && content != "")
             {
                 var ret = JsonSerializer.Deserialize<NodeBlockchainTransactionsWrapper>(content);
@@ -140,7 +140,7 @@ namespace FleetSharp
 
             var response = await _client.GetAsync(url);
             lastHttpResponseMessage = response;
-            return await response.Content.ReadFromJsonAsync<List<NodeFullTransaction>>();
+            return await response.EnsureSuccessStatusCode().Content.ReadFromJsonAsync<List<NodeFullTransaction>>();
         }
 
         //Tries to find unspent + mempool first, if not found tries spent ones.
@@ -153,7 +153,7 @@ namespace FleetSharp
             {
                 var response = await _client.GetAsync($"{_nodeURL}/utxo/withPool/byId/{boxId}");
                 lastHttpResponseMessage = response;
-                box = await response.Content.ReadFromJsonAsync<Box<long>>();
+                box = await response.EnsureSuccessStatusCode().Content.ReadFromJsonAsync<Box<long>>();
             }
             catch (Exception e)
             {
@@ -165,7 +165,7 @@ namespace FleetSharp
                 //Retrieve box from blockchain indexer instead
                 var response = await _client.GetAsync($"{_nodeURL}/blockchain/box/byId/{boxId}");
                 lastHttpResponseMessage = response;
-                box = await response.Content.ReadFromJsonAsync<Box<long>>();
+                box = await response.EnsureSuccessStatusCode().Content.ReadFromJsonAsync<Box<long>>();
             }
 
             return box;
@@ -201,7 +201,7 @@ namespace FleetSharp
 
             var response = await _client.PostAsJsonAsync($"{_nodeURL}/utxo/withPool/byIds", boxIds, defaultSerializerOptions);
             lastHttpResponseMessage = response;
-            var content = await response.Content.ReadAsStringAsync();
+            var content = await response.EnsureSuccessStatusCode().Content.ReadAsStringAsync();
             if (content != null && content != "")
             {
                 boxes = JsonSerializer.Deserialize<List<Box<long>>>(content);
@@ -225,7 +225,7 @@ namespace FleetSharp
                 //var response = await client.PostAsJsonAsync($"{_nodeURL}/blockchain/box/unspent/byErgoTree?offset={boxes.Count}&limit={limit}", ergoTree);
                 var response = await _client.PostAsync($"{_nodeURL}/blockchain/box/unspent/byErgoTree?offset={boxes.Count}&limit={limit}", new StringContent(ergoTree, Encoding.UTF8, "application/json"));
                 lastHttpResponseMessage = response;
-                var content = await response.Content.ReadAsStringAsync();
+                var content = await response.EnsureSuccessStatusCode().Content.ReadAsStringAsync();
                 if (content != null && content != "")
                 {
                     temp = JsonSerializer.Deserialize<List<Box<long>>>(content);
@@ -281,7 +281,7 @@ namespace FleetSharp
             //blockchain/box/unspent/byTokenId/0fdb7ff8b37479b6eb7aab38d45af2cfeefabbefdc7eebc0348d25dd65bc2c91?offset=0&limit=1000&sortDirection=desc&includeUnconfirmed=true
             var response = await _client.GetAsync($"{_nodeURL}/blockchain/box/unspent/byTokenId/{tokenId}?offset={offset}&limit={limit}&sortDirection={sortDirection}&includeUnconfirmed={(includeUnconfirmed ? "true" : "false")}");
             lastHttpResponseMessage = response;
-            var content = await response.Content.ReadAsStringAsync();
+            var content = await response.EnsureSuccessStatusCode().Content.ReadAsStringAsync();
             if (content != null && content != "")
             {
                 return JsonSerializer.Deserialize<List<Box<long>>>(content);
@@ -294,7 +294,7 @@ namespace FleetSharp
         {
             var response = await _client.GetAsync($"{_nodeURL}/wallet/boxes/unspent?minConfirmations={(considerMempool ? "-1" : "0")}");
             lastHttpResponseMessage = response;
-            var boxes = await response.Content.ReadFromJsonAsync<List<WalletBoxesUnspent>>();
+            var boxes = await response.EnsureSuccessStatusCode().Content.ReadFromJsonAsync<List<WalletBoxesUnspent>>();
 
             return boxes?.Select(x => x.box)?.ToList();
         }
@@ -303,7 +303,7 @@ namespace FleetSharp
         {
             var response = await _client.GetAsync($"{_nodeURL}/scan/unspentBoxes/{scanId}?minConfirmations={(considerMempool ? "-1" : "0")}");
             lastHttpResponseMessage = response;
-            var boxes = await response.Content.ReadFromJsonAsync<List<WalletBoxesUnspent>>();
+            var boxes = await response.EnsureSuccessStatusCode().Content.ReadFromJsonAsync<List<WalletBoxesUnspent>>();
 
             return boxes?.Select(x => x.box)?.ToList();
         }
@@ -323,7 +323,7 @@ namespace FleetSharp
 
                 var response = await _client.PostAsJsonAsync($"{_nodeURL}/transactions/unconfirmed/byErgoTree?offset={txes.Count + offset}&limit={chunkSize}", ergoTree, defaultSerializerOptions);
                 lastHttpResponseMessage = response;
-                var content = await response.Content.ReadAsStringAsync();
+                var content = await response.EnsureSuccessStatusCode().Content.ReadAsStringAsync();
                 if (content != null)
                 {
                     temp = JsonSerializer.Deserialize<List<NodeMempoolTransaction>>(content);
@@ -343,7 +343,7 @@ namespace FleetSharp
         {
             var response = await _client.GetAsync($"{_nodeURL}/transactions/unconfirmed/outputs/byTokenId/{tokenId}");
             lastHttpResponseMessage = response;
-            var boxes = await response.Content.ReadFromJsonAsync<List<Box<long>>>();
+            var boxes = await response.EnsureSuccessStatusCode().Content.ReadFromJsonAsync<List<Box<long>>>();
 
             return boxes;
         }
@@ -355,7 +355,7 @@ namespace FleetSharp
 
             var response = await _client.GetAsync($"{_nodeURL}/blockchain/token/byId/{tokenId}");
             lastHttpResponseMessage = response;
-            token = await response.Content.ReadFromJsonAsync<TokenDetail<long>>();
+            token = await response.EnsureSuccessStatusCode().Content.ReadFromJsonAsync<TokenDetail<long>>();
 
             return token;
         }
@@ -368,7 +368,7 @@ namespace FleetSharp
 
             var response = await _client.PostAsync($"{_nodeURL}/blockchain/balance", new StringContent(address, Encoding.UTF8, "application/json"));
             lastHttpResponseMessage = response;
-            var content = await response.Content.ReadAsStringAsync();
+            var content = await response.EnsureSuccessStatusCode().Content.ReadAsStringAsync();
             if (content != null && content != "")
             {
                 balance = JsonSerializer.Deserialize<NodeBalance<long>>(content);
@@ -414,14 +414,14 @@ namespace FleetSharp
         {
             var response = await _client.GetAsync($"{_nodeURL}/blocks/at/{blockHeight}");
             lastHttpResponseMessage = response;
-            return await response.Content.ReadFromJsonAsync<List<string>>();
+            return await response.EnsureSuccessStatusCode().Content.ReadFromJsonAsync<List<string>>();
         }
 
         public async Task<Block?> GetFullBlockById(string headerId)
         {
             var response = await _client.GetAsync($"{_nodeURL}/blocks/{headerId}");
             lastHttpResponseMessage = response;
-            return await response.Content.ReadFromJsonAsync<Block>();
+            return await response.EnsureSuccessStatusCode().Content.ReadFromJsonAsync<Block>();
         }
 
         public async Task<List<BlockHeader>?> GetBlockHeaders(int fromHeight = 0, int? toHeight = null)
@@ -429,14 +429,14 @@ namespace FleetSharp
             var url = $"{_nodeURL}/blocks/chainSlice?fromHeight={fromHeight}&toHeight={toHeight ?? 999999999}";
             var response = await _client.GetAsync(url);
             lastHttpResponseMessage = response;
-            return await response.Content.ReadFromJsonAsync<List<BlockHeader>>();
+            return await response.EnsureSuccessStatusCode().Content.ReadFromJsonAsync<List<BlockHeader>>();
         }
 
         public async Task<NodeIndexedHeight?> GetIndexedHeight()
         {
             var response = await _client.GetAsync($"{_nodeURL}/blockchain/indexedHeight");
             lastHttpResponseMessage = response;
-            return await response.Content.ReadFromJsonAsync<NodeIndexedHeight>();
+            return await response.EnsureSuccessStatusCode().Content.ReadFromJsonAsync<NodeIndexedHeight>();
         }
 
 
@@ -444,7 +444,7 @@ namespace FleetSharp
         {
             var response = await _client.GetAsync($"{_nodeURL}/info");
             lastHttpResponseMessage = response;
-            return await response.Content.ReadFromJsonAsync<NodeInfo>();
+            return await response.EnsureSuccessStatusCode().Content.ReadFromJsonAsync<NodeInfo>();
         }
 
         public async Task<bool> UnlockWallet(string password)
@@ -466,7 +466,7 @@ namespace FleetSharp
 
             var response = await _client.PostAsJsonAsync($"{_nodeURL}/utils/address", address);
             lastHttpResponseMessage = response;
-            var content = await response.Content.ReadAsStringAsync();
+            var content = await response.EnsureSuccessStatusCode().Content.ReadAsStringAsync();
             if (content == null || content == "") return false;
             IsValidAddress? valid = JsonSerializer.Deserialize<IsValidAddress>(content);
             if (valid == null) return false;
@@ -480,7 +480,7 @@ namespace FleetSharp
 
             var response = await _client.PostAsJsonAsync($"{_nodeURL}/wallet/transaction/sign", wrapper, defaultSerializerOptions);
             lastHttpResponseMessage = response;
-            var content = await response.Content.ReadAsStringAsync();
+            var content = await response.EnsureSuccessStatusCode().Content.ReadAsStringAsync();
             if (content == null || content == "") return null;
 
             SignedTransaction? signed = JsonSerializer.Deserialize<SignedTransaction>(content);
@@ -491,7 +491,7 @@ namespace FleetSharp
         {
             var response = await _client.PostAsJsonAsync($"{_nodeURL}/transactions", tx, defaultSerializerOptions);
             lastHttpResponseMessage = response;
-            var content = await response.Content.ReadAsStringAsync();
+            var content = await response.EnsureSuccessStatusCode().Content.ReadAsStringAsync();
             if (content == null || content == "") return null;
 
             string? transactionId = JsonSerializer.Deserialize<string>(content);
